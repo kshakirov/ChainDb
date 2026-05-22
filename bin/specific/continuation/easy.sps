@@ -1,17 +1,23 @@
-(display "working with continutations")
-
-(define loop-with-break
-  (lambda (l)
-    (call/cc
-     (lambda (cont-n)
-       (let f ([l l])
-	 (if (null? l)
-	     (display "Finished")
-	     ( f (cdr l))
+(define (my-length lst)
+  (call/cc
+   (lambda (cont)
+     (let loop ((remaining lst)
+		(acc 0))
+       (if (null? remaining)
+           acc
+           (begin
+	     (display (car remaining))
+	     (newline)
+	     (if (= 0 (car remaining))
+		 (cont "Exiting ..n")
+		 (display "all is okay\n")
+		 )
+	     (loop (cdr remaining) (+ acc 1))
+	     
 	     )
-	 )
-       )
-     )))
-
-
-(loop-with-break (list 1 2 3 4))
+	   ))
+     )
+   ))
+;; Example usage:
+(my-length '(1 2 3 4 0 5 6))
+;; => 4
