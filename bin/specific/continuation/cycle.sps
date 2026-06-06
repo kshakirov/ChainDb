@@ -29,6 +29,7 @@
       (let ((continuation (car continuation-with-values))
 	    (current-values (cdr continuation-with-values)))
 	(write current-values)
+	(newline)
 	(if (<  current-values 100) 
 	    (continuation (cons continuation (+ 1 current-values)))
 	    (write "Done")
