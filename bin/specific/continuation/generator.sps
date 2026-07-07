@@ -1,29 +1,51 @@
-(display "trying to reproduce generator")
+;; ===================================================================
+;; 1. Состояние системы (глобальные шлюзы управления)
+;; ===================================================================
+(define resume-cont #f) ; Тут засыпает генератор
+(define return-cont #f) ; Тут засыпает пользователь
 
+;; ===================================================================
+;; 2. Механизм Инверсии Контроля
+;; ===================================================================
 
+;; yield — замораживает генератор и выстреливает значение наружу
+(define yield
+  (lambda (arg)
+    (call/cc
+     (lambda (cont)
+       (set! resume-cont cont)  ; Запомнили точку внутри генератора
+       (return-cont arg)))))    ; Прыгнули наружу в точку ожидания пользователя
 
-(set! generator-user-cc #f)
-(set! generator-cc #f)
+;; next — делает снимок пользователя и толкает генератор вперёд
+(define next
+  (lambda ()
+    (call/cc
+     (lambda (cont)
+       (set! return-cont cont)  ; Запомнили точку ожидания пользователя
+       
+       (if (eq? #f resume-cont) ; Ваша строгая проверка первого старта
+           (generator-body)     ; Стартуем мотор с нуля
+           (resume-cont #t)))))) ; Или будим генератор в сохранённой точке
 
-(define my-loop
-  (lambda (n)
-    (let loop [(i n)]
-      (call/cc
-       (lambda (yield-to-user)
-	 (if (= 0 i) i
-	     ( begin
-	       (display "%\n")
-	       ( loop (- i 1)
-		 ))))))))
+;; ===================================================================
+;; 3. Логика вычислений и Потребитель
+;; ===================================================================
 
+;; Тело генератора — линейная последовательность шагов
+(define generator-body
+  (lambda ()
+    (let [(arg 100)] (yield arg))
+    (let [(arg 200)] (yield arg))
+    (let [(arg 300)] (yield arg))))
 
+;; Пользователь генератора — поочерёдно дёргает за ниточки
 (define generator-user
   (lambda ()
-    (begin
-      (display "\nuser started\n")
-      (my-loop 5)
-      )))
-
-;;(my-loop 10)
+    (let [(result1 (next))]
+      (display "User got: ") (display result1) (newline))
+    (let [(result2 (next))]
+      (display "User got: ") (display result2) (newline))
+    (let [(result3 (next))]
+      (display "User got: ") (display result3) (newline))))
 
 (generator-user)
