@@ -30,7 +30,7 @@
 ;; ===================================================================
 ;; 3. Логика вычислений и Потребитель
 ;; ===================================================================
-
+ 
 ;; Тело генератора — линейная последовательность шагов
 (define generator-body
   (lambda ()
@@ -49,3 +49,10 @@
       (display "User got: ") (display result3) (newline))))
 
 (generator-user)
+
+(define make-generator
+  (lambda (generator-body)
+  (display "generator ready")
+  ))
+
+(make-generator "")
