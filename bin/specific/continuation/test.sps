@@ -18,7 +18,7 @@
 			 (lambda (cont)
 			   (set! return-cont cont)  ; Запомнили точку ожидания пользователя
 			   (cond
-			    ((eq? resume-cont 'dead) (display ""))
+			    ((eq? resume-cont 'dead) #f)
 			    ((eq? #f resume-cont) ; Ваша строгая проверка первого старта
 			    (begin  ;; здесь мы вывалимся при пустышке
 			      (body yield)
