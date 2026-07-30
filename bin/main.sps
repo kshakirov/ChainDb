@@ -1,7 +1,15 @@
+;;(library-directories (cons "../src" (library-directories)))
+
+
+(import (rnrs)
+       (chainDb commands))
+
+
+
 ;; ===================================================================
 ;; ChainDB Core Engine Skeleton (Emulator File)
 ;; ===================================================================
-
+(test-cmd "dd\n")
 ;; Глобальное состояние ядра (пока максимально простое)
 (define *ready-queue* '())              ; Очередь готовых задач
 (define *dispatcher-continuation* #f)    ; Точка аварийного возврата в диспетчер
