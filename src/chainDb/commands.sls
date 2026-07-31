@@ -4,6 +4,7 @@
   (import
    (rnrs)
    (chainDb dispatcher)
+   (chainDb storage)
    )
 
   (define (test-cmd t) (display "testing module"))
