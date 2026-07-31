@@ -1,9 +1,17 @@
 (library (chainDb dispatcher)
   (export  run-dispatcher async-yield spawn) 
-  (import (rnrs))
+  (import
+;;   (rnrs)
+   (chezscheme)
+   )
   (define *ready-queue* '())              ; Очередь готовых задач
   (define *dispatcher-continuation* #f)    ; Точка аварийного возврата в диспетчер
-
+  (define make-dispatcher-sleep
+    (lambda (t)
+      (sleep (make-time 'time-duration 0 t))
+      (run-dispatcher)
+      )
+    )
   (define (spawn task-thunk)
     (set! *ready-queue* (append *ready-queue* (list task-thunk))))
 
@@ -25,7 +33,8 @@
   (define (run-dispatcher)
     (if (null? *ready-queue*)
 	(begin
-          (display "\n[ENGINE] === ВСЕ ЗАДАЧИ В ОЧЕРЕДИ ВЫПОЛНЕНЫ! БАЗА СТАБИЛЬНА ===\n")
+          (display "\n[ENGINE] === ВСЕ ЗАДАЧИ В ОЧЕРЕДИ ВЫПОЛНЕНЫ! БАЗА СТАБИЛЬНА =ЗАСЫПАЮ ==\n")
+	  (make-dispatcher-sleep 5)
           #t)
 	(begin
           ;; Захватываем точку возврата в диспетчер
