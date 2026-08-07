@@ -25,3 +25,14 @@
 
 ;; 2. Делаем мгновенный неблокирующий опрос (тайм-аут 0 миллисекунд)
 (define poll-result (c-poll pollfd-struct 1 0))
+
+
+;; Объявляем read: ssize_t read(int fd, void *buf, size_t count);
+
+(define c-read
+  (foreign-procedure "read" (int uptr size_t) ssize_t))
+
+
+
+;; Читаем поле revents (байты 6-7) с правильным порядком байт my-endian
+(bytevector-s16-ref pollfd-struct 6 my-endian)
