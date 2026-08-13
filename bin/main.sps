@@ -78,6 +78,6 @@
 
 
 (display select-result)
-(run-stupid)
+;;(run-stupid)
 
-;;(run-dispatcher)
+(run-dispatcher)

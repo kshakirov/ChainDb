@@ -3,12 +3,14 @@
   (import
 ;;   (rnrs)
    (chezscheme)
+   (chainDb pipe)
    )
   (define *ready-queue* '())              ; Очередь готовых задач
   (define *dispatcher-continuation* #f)    ; Точка аварийного возврата в диспетчер
   (define make-dispatcher-sleep
     (lambda (t)
       (sleep (make-time 'time-duration 0 t))
+      (run-stupid)
       (run-dispatcher)
       )
     )

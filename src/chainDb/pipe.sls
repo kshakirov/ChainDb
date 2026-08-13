@@ -23,8 +23,9 @@
     (display "=== СТАРТ ТЕСТА СИСТЕМНОГО ПОЛЛИНГА ===\n")
     (bytevector-s32-set! pollfd-struct 0 pipe-fd my-endian) ; пишем fd
     (bytevector-s16-set! pollfd-struct 4 1 my-endian)       ; пишем маску POLLIN (1)
-    (let [( poll-result (c-poll pollfd-struct 1 0))]
+    (let [( poll-result (c-poll pollfd-struct 1 500))]
       (format #t "Результат первого опроса (должен быть 0, так как данных нет): ~A\n" poll-result)
+      (when (> poll-result 0)
       (let [( revents-result (bytevector-s16-ref pollfd-struct 6 my-endian))]
 	(format #t "Статус флагов из ядра (revents): ~A\n" revents-result)
 	(let* ([read-buffer (make-bytevector 128 0)]
@@ -35,7 +36,7 @@
 
 	
       (display "=== ТЕСТ ЗАВЕРШЕН УСПЕШНО ===\n")
-      ))
+      )))
 
     ))
 
