@@ -3,6 +3,7 @@
 
 (import (chezscheme)
 	(chainDb dispatcher)
+	(chainDb pipe)
 	(chainDb commands))
 
 
@@ -52,7 +53,31 @@
 	    (loop)
 
 	    ))))))
-    
 
-;; 2. Стартуем наш Диспетчер
-(run-dispatcher)
+;; 1. Подключаем системное пространство macOS
+;; 1. Подключаем системное пространство macOS
+(load-shared-object #f)
+
+;; 2. Объявляем select с правильным типом u8* для маски
+
+;; 1. Объявляем select, где второй и пятый аргументы — это массивы байт (u8*)
+(define c-select 
+  (foreign-procedure "select" (int u8* void* void* u8*) int))
+
+;; 2. Создаём маску для клавиатуры (8 байт)
+(define read-mask (make-bytevector 8 0))
+(bytevector-u8-set! read-mask 0 1)
+
+;; 3. Создаём структуру тайм-аута (16 байт, все нули = 0 наносекунд ожидания)
+(define timeout (make-bytevector 16 0))
+
+;; 4. МГНОВЕННЫЙ ВЫЗОВ: передаём маску и тайм-аут
+(define select-result (c-select 1 read-mask 0 0 timeout))
+
+
+
+
+(display select-result)
+(run-stupid)
+
+;;(run-dispatcher)
