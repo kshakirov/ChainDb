@@ -28,6 +28,7 @@
       (let [( revents-result (bytevector-s16-ref pollfd-struct 6 my-endian))]
 	(format #t "Статус флагов из ядра (revents): ~A\n" revents-result)
 	)
+       (let [(read-buffer (make-bytevector 128 0))]
       )
 
     )
