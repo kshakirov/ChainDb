@@ -27,11 +27,16 @@
       (format #t "Результат первого опроса (должен быть 0, так как данных нет): ~A\n" poll-result)
       (let [( revents-result (bytevector-s16-ref pollfd-struct 6 my-endian))]
 	(format #t "Статус флагов из ядра (revents): ~A\n" revents-result)
-	)
-      (display "")
-      )
+	(let* ([read-buffer (make-bytevector 128 0)]
+               [bytes-read (c-read pipe-fd read-buffer 127)])
+	  (format #t "Прочитано байт: ~A\n" bytes-read)
+          (format #t "Полученный текст: ~A\n" (utf8->string read-buffer)))
 
-    )
-  )
+
+	
+      (display "=== ТЕСТ ЗАВЕРШЕН УСПЕШНО ===\n")
+      ))
+
+    ))
 
 
