@@ -21,23 +21,33 @@
     (let [( poll-result (c-poll pollfd-struct 1 500))]
       (format #t "Результат первого опроса (должен быть 0, так как данных нет): ~A\n" poll-result)
       (when (> poll-result 0)
-	(let [( revents-result (bytevector-s16-ref pollfd-struct 6 my-endian))]
+	(let [( revents-result (bytevector-s16-ref pollfd-struct 6 my-endian)) (list-of-vectors '()) ]
 	  (format #t "Статус флагов из ядра (revents): ~A\n" revents-result)
 	  (let loop ()
-	    (let ([poll-ready? (> (c-poll pollfd-struct 1 0) 0)])
+	    (let ([poll-ready? (> (c-poll pollfd-struct 1 0) 0)]  )
 	      (if poll-ready?
 		  (let* ([read-buffer (make-bytevector 128 0)]
 			 [bytes-read (c-read pipe-fd read-buffer 127)])
 		    (format #t "Прочитано байт: ~A\n" bytes-read)
-		    (format #t "Полученный текст: ~A\n" (utf8->string read-buffer))
+		    (format #t "Полученный текст: ~A\n" (utf8->string read-buffer)
+			    
+			    )
+		    ( set! list-of-vectors (cons read-buffer list-of-vectors))
 
 		    (if (>= bytes-read 0)
 			(loop)
 			(display "=== ALL READ ====")
-		)	)))
-	      (display "=== ТЕСТ ЗАВЕРШЕН УСПЕШНО ===\n")
-	      )))
+			)
+		    )
+		  list-of-vectors
+		  )
+	      )
+	    )
+	  )
+	)
 
-	)))
+      )
+    )
+  )
 
 
