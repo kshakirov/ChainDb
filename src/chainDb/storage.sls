@@ -1,5 +1,5 @@
 (library (chainDb storage)
-  (export put-k-value get-k-value )
+  (export put-k-value )
   (import
    (chezscheme)
    )
@@ -10,8 +10,8 @@
       (hashtable-set!  db k v)
       #t)
     )
-  (define get-k-value
-    (lambda (k)
-      (hashtable-ref db k))
-    )
+ ;; (define get-k-value
+ ;;    (lambda (k)
+ ;;      (hashtable-ref db k))
+ ;;    )
   )

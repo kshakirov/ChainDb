@@ -5,7 +5,30 @@
 ;;(load-shared-object #f)
 
 ;; 3. Импорт модулей
-(import (chezscheme)
-	(chainDb pipe))
+;; 1. Configure library search directories (relative to project root)
+;;(library-directories '(("." ("src" . "."))))
 
-(display (run-stupid))
+;; 2. Load system C symbols for FFI
+;;(load-shared-object #f)
+
+;; 3. Import project modules
+
+(import (chezscheme)
+(chainDb pipe)
+(chainDb dispatcher)
+;;(import (chainDb storage))
+(chainDb commands))
+
+(define  list-of-vectors (run-stupid))
+(define v1 #vu8( 1 2 3))
+(define v2 #vu8( 4 5 6))
+(define (prepend-bytevector v1 v2)
+  (let [ (v1size (bytevector-length v1)) (v2size (bytevector-length v2))]
+    ( let [(nbv (make-bytevector (+ v1size v2size)))]
+      (bytevector-copy! v1 0 nbv 0 v1size)
+      (bytevector-copy! v2 0 nbv v1size v2size)
+      nbv)))
+    
+
+(display (utf8->string list-of-vectors))
+;;(prepend-bytevector v1 v2)
