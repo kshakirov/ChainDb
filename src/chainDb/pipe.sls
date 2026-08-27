@@ -10,7 +10,7 @@
   (define c-read
     (foreign-procedure "read" (int u8* size_t) ssize_t))
   (define pollfd-struct (make-bytevector 8 0))
-  (define (prepend-bytevector v1 v2)
+  (define (append-bytevector v1 v2)
   (let [ (v1size (bytevector-length v1)) (v2size (bytevector-length v2))]
     ( let [(nbv (make-bytevector (+ v1size v2size)))]
       (bytevector-copy! v1 0 nbv 0 v1size)
@@ -38,7 +38,7 @@
 		    (format #t "Прочитано байт: ~A\n" bytes-read)
 		   (format #t "Полученный текст: ~A\n" (utf8->string read-buffer))
 ;;		   ( set! list-of-vectors (cons read-buffer list-of-vectors))
-		   (set! vector-of-vectors (prepend-bytevector vector-of-vectors read-buffer))
+		   (set! vector-of-vectors (append-bytevector vector-of-vectors read-buffer))
 
 		    (if (> bytes-read 0)
 			(loop)

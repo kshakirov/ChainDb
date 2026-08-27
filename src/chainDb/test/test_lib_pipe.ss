@@ -22,7 +22,7 @@
 (define  list-of-vectors (run-stupid))
 (define v1 #vu8( 1 2 3))
 (define v2 #vu8( 4 5 6))
-(define (prepend-bytevector v1 v2)
+(define (append-bytevector v1 v2)
   (let [ (v1size (bytevector-length v1)) (v2size (bytevector-length v2))]
     ( let [(nbv (make-bytevector (+ v1size v2size)))]
       (bytevector-copy! v1 0 nbv 0 v1size)
@@ -31,4 +31,4 @@
     
 
 (display (utf8->string list-of-vectors))
-(prepend-bytevector v1 v2)
+(append-bytevector v1 v2)
