@@ -30,5 +30,5 @@
       nbv)))
     
 
-;;(display (utf8->string list-of-vectors))
+(display (utf8->string list-of-vectors))
 (prepend-bytevector v1 v2)
