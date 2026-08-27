@@ -32,7 +32,7 @@ jq -c '.[]' "$issues_dir/issues.json" | while IFS= read -r issue; do
   number=$(printf '%s' "$issue" | jq -r '.number')
   output="$issues_md_dir/$number.md"
 
-  printf '%s' "$issue" | jq -r '
+  printf '%s' "$issue" | jq -j '
     "# #\(.number): \(.title)\n\n" +
     "- State: \(.state)\n" +
     "- Author: \(.author.login // "unknown")\n" +
