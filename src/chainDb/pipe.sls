@@ -38,10 +38,14 @@
 		    (format #t "Прочитано байт: ~A\n" bytes-read)
 		   (format #t "Полученный текст: ~A\n" (utf8->string read-buffer))
 ;;		   ( set! list-of-vectors (cons read-buffer list-of-vectors))
-		   (set! vector-of-vectors (append-bytevector vector-of-vectors read-buffer))
+
 
 		    (if (> bytes-read 0)
-			(loop)
+			(begin
+			 (bytevector-truncate! read-buffer bytes-read)
+			 (set! vector-of-vectors (append-bytevector vector-of-vectors read-buffer))
+			 (loop)
+			 )
 			(display "=== ALL READ ====")
 			)
 		    )

@@ -1,4 +1,5 @@
 Welcome to the ChainDb wiki!
 
 
-[[PIPES | pipes]]
+* [[PIPES | pipes]]
+* [[Термины ChainDb | Terminology]]

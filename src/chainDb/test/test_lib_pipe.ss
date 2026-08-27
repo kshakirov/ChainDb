@@ -18,7 +18,9 @@
 (chainDb dispatcher)
 ;;(import (chainDb storage))
 (chainDb commands))
-
+(define fd (open-output-file "/Users/kiryloshakirov/Documents/repos/scheme_coding/my_test_pipe" 'append))
+(put-string fd (utf8->string (make-bytevector 1028 31)))
+(close-output-port fd)
 (define  list-of-vectors (run-stupid))
 (define v1 #vu8( 1 2 3))
 (define v2 #vu8( 4 5 6))
@@ -31,4 +33,8 @@
     
 
 (display (utf8->string list-of-vectors))
-(append-bytevector v1 v2)
+(if (= (bytevector-length list-of-vectors) 1028)
+    (display "test ok")
+    (display "test failed")
+    )
+;;(append-bytevector v1 v2)
