@@ -1,6 +1,6 @@
 (load-shared-object #f)
 (library (chainDb pipe)
-  (export run-stupid)
+  (export run-stupid c-open)
   (import (chezscheme))
   (define my-endian (native-endianness))
   (define c-open

@@ -18,9 +18,15 @@
 (chainDb dispatcher)
 ;;(import (chainDb storage))
 (chainDb commands))
-(define fd (open-output-file "/Users/kiryloshakirov/Documents/repos/scheme_coding/my_test_pipe" 'append))
-(put-string fd (utf8->string (make-bytevector 1028 31)))
-(close-output-port fd)
+(define fd (c-open "/Users/kiryloshakirov/Documents/repos/scheme_coding/my_test_pipe" 6))
+
+(format #t "Пайп для чтения успешно открыт. Получен дескриптор fd: ~A\n" fd)
+
+(define c-write (foreign-procedure "write" (int u8* size_t) ssize_t))
+(define c-close (foreign-procedure "close" (int) int ))
+(define data-to-write(make-bytevector 1028 31))
+(c-write fd data-to-write 1028)
+
 (define  list-of-vectors (run-stupid))
 (define v1 #vu8( 1 2 3))
 (define v2 #vu8( 4 5 6))
@@ -37,4 +43,6 @@
     (display "test ok")
     (display "test failed")
     )
+(c-close  fd)
 ;;(append-bytevector v1 v2)
+
