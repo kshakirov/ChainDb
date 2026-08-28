@@ -25,7 +25,7 @@
 (define c-write (foreign-procedure "write" (int u8* size_t) ssize_t))
 (define c-close (foreign-procedure "close" (int) int ))
 (define data-to-write(make-bytevector 1028 31))
-(c-write fd data-to-write 1028)
+(define written-bytes (c-write fd data-to-write 1028))
 
 (define  list-of-vectors (run-stupid))
 (define v1 #vu8( 1 2 3))
@@ -39,7 +39,7 @@
     
 
 (display (utf8->string list-of-vectors))
-(if (= (bytevector-length list-of-vectors) 1028)
+(if (= (bytevector-length list-of-vectors) written-bytes)
     (display "test ok")
     (display "test failed")
     )

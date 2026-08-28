@@ -17,7 +17,7 @@
       (bytevector-copy! v2 0 nbv v1size v2size)
       nbv)))
   (define (run-stupid)
-    (define pipe-fd (c-open "my_test_pipe" 2050))
+    (define pipe-fd (c-open "my_test_pipe" 6))
     (format #t "Пайп успешно открыт. Получен дескриптор fd: ~A\n" pipe-fd)
 
 
@@ -25,7 +25,7 @@
     (bytevector-s32-set! pollfd-struct 0 pipe-fd my-endian) ; пишем fd
     (bytevector-s16-set! pollfd-struct 4 1 my-endian)       ; пишем маску POLLIN (1)
     (let [( poll-result (c-poll pollfd-struct 1 500)) (vector-of-vectors #vu8())]
-      (format #t "Результат первого опроса (должен быть 0, так как данных нет): ~A\n" poll-result)
+      ;;(format #t "Результат первого опроса (должен быть 0, так как данных нет): ~A\n" poll-result)
       (when (> poll-result 0)
 	(let [( revents-result (bytevector-s16-ref pollfd-struct 6 my-endian))
 	       ]
