@@ -4,6 +4,7 @@
 ;;   (rnrs)
    (chezscheme)
    (chainDb pipe)
+   (chainDb commands)
    )
   (define *ready-queue* '())              ; Очередь готовых задач
   (define *dispatcher-continuation* #f)    ; Точка аварийного возврата в диспетчер

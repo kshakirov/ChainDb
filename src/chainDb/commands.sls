@@ -1,9 +1,10 @@
 
 (library (chainDb commands)
-  (export  test-cmd execute-get  execute-heavy-scan execute-very-heavy-scan) 
+;;  (export  test-cmd execute-get  execute-heavy-scan execute-very-heavy-scan)
+  (export  test-cmd execute-get  )
   (import
    (rnrs)
-   (chainDb dispatcher)
+   ;;(chainDb dispatcher)
    (chainDb storage)
    )
 
@@ -13,34 +14,34 @@
     (display (string-append "   [API EXECUTOR] Значение найдено в памяти за O(1). Результат отправлен.\n")))
 
   ;; Имитация тяжелого запроса (KEYS * / SCAN), требующего квантования
-  (define (execute-heavy-scan)
-    (display "   [API EXECUTOR] Стартую тяжелое сканирование индексов...\n")
-    (display "   [API EXECUTOR] Просканировано первые 1000 ключей...\n")
-    (async-yield "KEYS *") ; Первая пауза
+  ;; (define (execute-heavy-scan)
+  ;;   (display "   [API EXECUTOR] Стартую тяжелое сканирование индексов...\n")
+  ;;   (display "   [API EXECUTOR] Просканировано первые 1000 ключей...\n")
+  ;;   (async-yield "KEYS *") ; Первая пауза
     
-    (display "   [API EXECUTOR] Курсор проснулся точно в той же точке. Сканирую следующие 1000 ключей...\n")
-    (async-yield "KEYS *") ; Вторая пауза
+  ;;   (display "   [API EXECUTOR] Курсор проснулся точно в той же точке. Сканирую следующие 1000 ключей...\n")
+  ;;   (async-yield "KEYS *") ; Вторая пауза
     
-    (display "   [API EXECUTOR] Финал сканирования. Индекс полностью обработан.\n"))
+  ;;   (display "   [API EXECUTOR] Финал сканирования. Индекс полностью обработан.\n"))
 
 
-  (define (execute-very-heavy-scan)
-  ;;  (lambda ()
-      (display "   [API EXECUTOR] Стартую тяжелое сканирование индексов...\n")
-      (let loop ((i 0))
-	(when ( < i 1000000)
-	  (when (= (mod i 5000) 0)
-	    (display "   [API EXECUTOR] Просканировано первые 50000 ключей...\n")
-	    (async-yield "KEYS *") ; Первая пауза
-	    (display "   [API EXECUTOR] Курсор проснулся точно в той же точке. Сканирую следующие 1000 ключей...\n")
+  ;; (define (execute-very-heavy-scan)
+  ;; ;;  (lambda ()
+  ;;     (display "   [API EXECUTOR] Стартую тяжелое сканирование индексов...\n")
+  ;;     (let loop ((i 0))
+  ;; 	(when ( < i 1000000)
+  ;; 	  (when (= (mod i 5000) 0)
+  ;; 	    (display "   [API EXECUTOR] Просканировано первые 50000 ключей...\n")
+  ;; 	    (async-yield "KEYS *") ; Первая пауза
+  ;; 	    (display "   [API EXECUTOR] Курсор проснулся точно в той же точке. Сканирую следующие 1000 ключей...\n")
 
-	    (display i )
-	    (display "\n")
+  ;; 	    (display i )
+  ;; 	    (display "\n")
 
-	    )
-	  (loop (+ i 1))))
-      (display "   [API EXECUTOR] Финал сканирования. Индекс полностью обработан.\n")
-      )
+  ;; 	    )
+  ;; 	  (loop (+ i 1))))
+  ;;     (display "   [API EXECUTOR] Финал сканирования. Индекс полностью обработан.\n")
+  ;;     )
 ;;    )
 
   )
