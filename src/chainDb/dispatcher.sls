@@ -11,7 +11,7 @@
   (define make-dispatcher-sleep
     (lambda (t)
       (sleep (make-time 'time-duration 0 t))
-      (run-stupid)
+      (poll-fifo-source)
       (run-dispatcher)
       )
     )

@@ -1,6 +1,6 @@
 (load-shared-object #f)
 (library (chainDb pipe)
-  (export run-stupid c-open)
+  (export poll-fifo-source c-open)
   (import (chezscheme))
   (define my-endian (native-endianness))
   (define c-open
@@ -16,7 +16,7 @@
       (bytevector-copy! v1 0 nbv 0 v1size)
       (bytevector-copy! v2 0 nbv v1size v2size)
       nbv)))
-  (define (run-stupid)
+  (define (poll-fifo-source)
     (define pipe-fd (c-open "my_test_pipe" 6))
     (format #t "Пайп успешно открыт. Получен дескриптор fd: ~A\n" pipe-fd)
 

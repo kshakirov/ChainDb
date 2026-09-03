@@ -27,7 +27,7 @@
 (define data-to-write(make-bytevector 1028 31))
 (define written-bytes (c-write fd data-to-write 1028))
 
-(define  list-of-vectors (run-stupid))
+(define  list-of-vectors (poll-fifo-source))
 (define v1 #vu8( 1 2 3))
 (define v2 #vu8( 4 5 6))
 (define (append-bytevector v1 v2)

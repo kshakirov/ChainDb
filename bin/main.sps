@@ -10,6 +10,6 @@
 
 
 ;; Главная точка входа для входящих запросов
-;;(run-stupid)
+;;(poll-fifo-source)
 
 (run-dispatcher)
