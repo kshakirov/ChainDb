@@ -1,13 +1,21 @@
 
 (library (chainDb commands)
 ;;  (export  test-cmd execute-get  execute-heavy-scan execute-very-heavy-scan)
-  (export  test-cmd execute-get  )
+  (export  test-cmd execute-get  validate-cmd )
   (import
    (rnrs)
    ;;(chainDb dispatcher)
    (chainDb storage)
    )
 
+  (define (validate-cmd candidate)
+    (begin
+     ;;(display "Validating cmd")
+     ;;(display candidate)
+     (if (= (bytevector-length candidate) 0)
+	 #f
+	 test-cmd)
+    ))
   (define (test-cmd t) (display "testing module"))
   (define (execute-get key)
     (display (string-append "   [API EXECUTOR] Выполняю GET для ключа: '" key "'\n"))

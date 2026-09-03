@@ -18,10 +18,10 @@
       nbv)))
   (define (poll-fifo-source)
     (define pipe-fd (c-open "my_test_pipe" 6))
-    (format #t "Пайп успешно открыт. Получен дескриптор fd: ~A\n" pipe-fd)
+;;    (format #t "Пайп успешно открыт. Получен дескриптор fd: ~A\n" pipe-fd)
 
 
-    (display "=== СТАРТ ТЕСТА СИСТЕМНОГО ПОЛЛИНГА ===\n")
+   ;; (display "=== СТАРТ ТЕСТА СИСТЕМНОГО ПОЛЛИНГА ===\n")
     (bytevector-s32-set! pollfd-struct 0 pipe-fd my-endian) ; пишем fd
     (bytevector-s16-set! pollfd-struct 4 1 my-endian)       ; пишем маску POLLIN (1)
     (let [( poll-result (c-poll pollfd-struct 1 500)) (vector-of-vectors #vu8())]

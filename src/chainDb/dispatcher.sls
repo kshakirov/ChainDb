@@ -11,7 +11,11 @@
   (define make-dispatcher-sleep
     (lambda (t)
       (sleep (make-time 'time-duration 0 t))
-      (poll-fifo-source)
+      (let [(vector-of-vectors  (poll-fifo-source)  )]
+	(let [ (task (validate-cmd vector-of-vectors))]
+	(when task
+	  (spawn (lambda () (task 1)))
+	)))
       (run-dispatcher)
       )
     )
@@ -36,7 +40,7 @@
   (define (run-dispatcher)
     (if (null? *ready-queue*)
 	(begin
-          (display "\n[ENGINE] === ВСЕ ЗАДАЧИ В ОЧЕРЕДИ ВЫПОЛНЕНЫ! БАЗА СТАБИЛЬНА =ЗАСЫПАЮ ==\n")
+          ;;(display "\n[ENGINE] === ВСЕ ЗАДАЧИ В ОЧЕРЕДИ ВЫПОЛНЕНЫ! БАЗА СТАБИЛЬНА =ЗАСЫПАЮ ==\n")
 	  (make-dispatcher-sleep 5)
           #t)
 	(begin
