@@ -14,7 +14,7 @@
       (let [(vector-of-vectors  (poll-fifo-source)  )]
 	(let [ (task (validate-cmd vector-of-vectors))]
 	(when task
-	  (spawn (lambda () (task 1)))
+	  (spawn (lambda () (task async-yield)))
 	)))
       (run-dispatcher)
       )

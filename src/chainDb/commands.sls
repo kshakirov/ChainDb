@@ -16,7 +16,13 @@
 	 #f
 	 test-cmd)
     ))
-  (define (test-cmd t) (display "testing module"))
+  (define (test-cmd async-yield) (
+			begin
+			 (display "test-cmd: Before yielding the control\n")
+			 (async-yield "test-cmd")
+			 (display "test-cmd: After  yielding the control\n")
+			 )
+    )
   (define (execute-get key)
     (display (string-append "   [API EXECUTOR] Выполняю GET для ключа: '" key "'\n"))
     (display (string-append "   [API EXECUTOR] Значение найдено в памяти за O(1). Результат отправлен.\n")))
