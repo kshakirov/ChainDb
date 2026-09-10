@@ -12,9 +12,9 @@
     (lambda (t)
       (sleep (make-time 'time-duration 0 t))
       (let [(vector-of-vectors  (poll-fifo-source)  )]
-	(let [ (task (validate-cmd vector-of-vectors))]
+	(let [ (task (run-cmd vector-of-vectors async-yield))]
 	(when task
-	  (spawn (lambda () (task async-yield)))
+	  (spawn (task))
 	)))
       (run-dispatcher)
       )

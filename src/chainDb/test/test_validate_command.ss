@@ -1,20 +1,43 @@
-(import (chezscheme))
+(import
+ (chezscheme)
+ )
 
-(define (get-key key)
-  (lambda(async-yield)
-  (begin 
-    (display (string-append "procedure get-kye " key " -> the parameter\n"))
-    (display (string-append "anothoer string " async-yield " async-call\n"))
-  )
-  ))
+(define (test-yield str)
+  (display str))
 
-
-(define (create-get-key-procedure param)
+(define (get-key-closure key yield)
   (lambda()
-    (get-key param)
+    (begin 
+      (display (string-append "procedure get-kye " key " -> the parameter, before yielding ..\n"))
+      (yield (string-append "yielding : test_validate key -> ["  key " ]\n" ))
+      (display "After yield \n")
+      )
     ))
-((get-key "direct call") " first ")
 
-(let [(procedure (create-get-key-procedure "call via closure"))]
-  ((procedure) "second")
+
+(define (create-get-key-closure-procedure param yield)
+  (lambda()
+    (get-key-closure param yield)
+    ))
+((get-key-closure "direct call" test-yield ))
+
+(let [(procedure (create-get-key-closure-procedure "call via closure" test-yield))]
+  ((procedure))
   )
+
+(define (decode-cmd-fake msg)
+  ( cons "get" "1"))
+
+(define( run-cmd msg yield)
+   (let [(opcode (car (decode-cmd-fake msg))) (key (cdr (decode-cmd-fake msg))) ] 
+   (create-get-key-closure-procedure key yield)
+   ))
+ 
+(define cmd "get::1::#")
+;; (define (decode-cmd msg)
+;;   (let [(chars (string->list msg) (op "") (key "")]
+;; 	( let loop [(letter (car chars) (rest (cdr chars))] )
+;; 	  (cond ( 
+;;   ))
+ 
+(((run-cmd "test" test-yield)))
