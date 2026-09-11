@@ -16,6 +16,7 @@
 (import (chezscheme)
 (chainDb pipe)
 (chainDb dispatcher)
+(chainDb parser)
 ;;(import (chainDb storage))
 (chainDb commands))
 (define fd (c-open "/Users/kiryloshakirov/Documents/repos/scheme_coding/my_test_pipe" 6))
