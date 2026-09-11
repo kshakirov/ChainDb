@@ -1,7 +1,7 @@
 
 (library (chainDb commands)
   ;;  (export  test-cmd execute-get  execute-heavy-scan execute-very-heavy-scan)
-  (export  execute-get   run-cmd )
+  (export  run-cmd )
   (import
    (rnrs)
    ;;(chainDb dispatcher)
@@ -35,35 +35,35 @@
 
 
   
-  (define (get-key key)
-    (lambda(async-yield)
-      (begin 
-	(display (string-append "procedure get-kye " key " -> the parameter\n"))
-	(display "test-cmd: Before yielding the control\n")
-	(async-yield "test-cmd")
-	(display "test-cmd: After  yielding the control\n")
-	(display (string-append "anothoer string " async-yield " async-call\n"))
-	)
-      ))
+  ;; (define (get-key key)
+  ;;   (lambda(async-yield)
+  ;;     (begin 
+  ;; 	(display (string-append "procedure get-kye " key " -> the parameter\n"))
+  ;; 	(display "test-cmd: Before yielding the control\n")
+  ;; 	(async-yield "test-cmd")
+  ;; 	(display "test-cmd: After  yielding the control\n")
+  ;; 	(display (string-append "anothoer string " async-yield " async-call\n"))
+  ;; 	)
+  ;;     ))
 
 
-  (define (create-get-key-procedure param)
-    (lambda()
-      (get-key param)
-      ))
+  ;; (define (create-get-key-procedure param)
+  ;;   (lambda()
+  ;;     (get-key param)
+  ;;     ))
 
 
   
-  (define (test-cmd async-yield) (
-				  begin
-				   (display "test-cmd: Before yielding the control\n")
-				   (async-yield "test-cmd")
-				   (display "test-cmd: After  yielding the control\n")
-				   )
-    )
-  (define (execute-get key)
-    (display (string-append "   [API EXECUTOR] Выполняю GET для ключа: '" key "'\n"))
-    (display (string-append "   [API EXECUTOR] Значение найдено в памяти за O(1). Результат отправлен.\n")))
+  ;; (define (test-cmd async-yield) (
+  ;; 				  begin
+  ;; 				   (display "test-cmd: Before yielding the control\n")
+  ;; 				   (async-yield "test-cmd")
+  ;; 				   (display "test-cmd: After  yielding the control\n")
+  ;; 				   )
+  ;;   )
+  ;; (define (execute-get key)
+  ;;   (display (string-append "   [API EXECUTOR] Выполняю GET для ключа: '" key "'\n"))
+  ;;   (display (string-append "   [API EXECUTOR] Значение найдено в памяти за O(1). Результат отправлен.\n")))
 
   ;; Имитация тяжелого запроса (KEYS * / SCAN), требующего квантования
   ;; (define (execute-heavy-scan)
