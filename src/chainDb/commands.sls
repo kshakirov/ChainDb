@@ -30,7 +30,7 @@
     (if (= (bytevector-length msg) 0) #f
 	(begin
     (let [(opcode (car (decode-cmd-fake msg))) (key (cdr (decode-cmd-fake msg))) ] 
-      (create-get-key-closure-procedure key yield)
+      ((create-get-key-closure-procedure key yield))
       ))))
 
 
