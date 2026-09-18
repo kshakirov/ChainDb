@@ -6,6 +6,7 @@
    (rnrs)
    ;;(chainDb dispatcher)
    (chainDb storage)
+   (chainDb parser)
    )
 
   (define (get-key-closure key yield)
@@ -24,14 +25,17 @@
       ))
 
   (define (decode-cmd-fake msg)
-    ( cons "get" "1")) 
+    ( cons "get" "1"))
 
   (define( run-cmd msg yield)
     (if (= (bytevector-length msg) 0) #f
 	(begin
-	  (let [(opcode (car (decode-cmd-fake msg))) (key (cdr (decode-cmd-fake msg))) ] 
+	  (let* ((cmd (string->list (utf8->string msg)))
+		 (parsed-cmd (decode-cmd cmd  '() '()))
+		 (opcode (car parsed-cmd ))
+		 (key (cdr parsed-cmd)) )
 	    ((create-get-key-closure-procedure key yield))
-	    ))))
+	  ))))
   )
 
 

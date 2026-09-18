@@ -9,5 +9,6 @@
 
 
 
-(car (decode-cmd (string->list "!get::1#") '() '()))
-(cdr (decode-cmd (string->list "!get::1#") '() '()))
+(assert (string=? (car (decode-cmd (string->list "!get::1#") '() '())) "get"))
+
+(assert (string=?(cdr (decode-cmd (string->list "!get::1#") '() '())) "1"))
