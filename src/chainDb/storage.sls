@@ -1,22 +1,26 @@
 (library (chainDb storage)
-  (export put-k-value )
+  (export put-k-value  get-k-value)
   (import
    (chezscheme)
    )
 
-  (define db (make-eq-hashtable))
+  (define db (make-hashtable string-hash string=?))
   (define put-k-value
     (lambda (k v)
-     (eq-hashtable-set!  db k v)
+     (hashtable-set!  db k v)
       #t)
     )
  (define get-k-value
     (lambda (k)
-      (eq-hashtable-ref db k))
+      (hashtable-ref db k #f))
     )
   )
 
 
+
+;; (define store (make-hashtable string-hash string=?))
+;; (hashtable-set! store "1" value)
+;; (hashtable-ref  store "1" #f)   ; →
 ;; (define store (make-eq-hashtable))
 
 ;; (eq-hashtable-set! store 'foo 42)          ; положить

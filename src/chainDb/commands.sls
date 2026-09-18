@@ -3,7 +3,7 @@
   ;;  (export  test-cmd execute-get  execute-heavy-scan execute-very-heavy-scan)
   (export  run-cmd )
   (import
-   (rnrs)
+   (chezscheme)
    ;;(chainDb dispatcher)
    (chainDb storage)
    (chainDb parser)
@@ -13,9 +13,12 @@
     (lambda()
       (begin 
 	(display (string-append "procedure get-kye " key " -> the parameter, before yielding ..\n"))
-	(yield (string-append "yielding : test_validate key -> ["  key " ]\n" ))
-	(display "After yield \n")
-	)
+	(let ((found (get-k-value key) ))
+	  (if  found (display (string-append "Found value " found))
+	     (display (string-append "Not found by  " key)))
+	  (yield (string-append "yielding : test_validate key -> ["  key " ]\n" ))
+	  (display "After yield \n")
+	  ))
       ))
 
 
