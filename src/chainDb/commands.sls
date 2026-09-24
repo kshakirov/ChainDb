@@ -21,10 +21,24 @@
 	  ))
       ))
 
+  (define (put-key-value-closure key value)
+    (lambda()
+      (begin 
+	(display (string-append "procedure put-key " key " -> value " value ))
+	(put-k-value key value)
+	(display "Done")
+	  ))
+      )
+
 
   (define (create-get-key-closure-procedure param yield)
     (lambda()
       (get-key-closure param yield)
+      ))
+
+    (define (create-put-key-value-closure-procedure key value)
+    (lambda()
+      (put-key-value-closure key value)
       ))
 
   (define (decode-cmd-fake msg)
@@ -38,10 +52,9 @@
 		 (opcode (car parsed-cmd ))
 		 (args (cdr parsed-cmd))
 		 (key (list->string (car args))))
-		;; (key (cdr parsed-cmd)) )
-	    ((create-get-key-closure-procedure key yield))
+	    ;; (key (cdr parsed-cmd)) )
+	    (if (string=? opcode "get")
+		((create-get-key-closure-procedure key yield))
+		((create-put-key-value-closure-procedure key  (list->string (cadr args))))
 	  ))))
-  )
-
-
-  
+  ))
