@@ -13,16 +13,29 @@
 		    ((char=? ch  #\:)   (cons (list->string (reverse op)) tail ))
 		    (else (decode-op tail (cons ch op)))))))))
 
+  ;; (define decode-arg
+  ;;   (lambda (fragment arg optional)
+  ;;     (if (null? fragment) (cons arg '())
+  ;; 	  (begin (let   [(ch (car fragment) ) (tail (cdr fragment)) ]
+  ;; 		   (cond
+  ;; 		    (( char=? ch #\:) (decode-arg tail arg))
+  ;; 		    ((char=? ch  #\#)  (cons  (list->string (reverse arg)) tail))
+  ;; 		    (else (decode-arg tail (cons ch optional)))))))))
+
+
   (define decode-arg
-    (lambda (fragment arg)
-      (if (null? fragment) (cons arg '())
-	  (begin (let   [(ch (car fragment) ) (tail (cdr fragment)) ]
-		   (cond
-		    (( char=? ch #\:) (decode-arg tail arg))
-		    ((char=? ch  #\#)  (cons  (list->string (reverse arg)) tail))
-		    (else (decode-arg tail (cons ch arg)))))))))
-
-
+  (lambda (fragment arg opt)
+    (if (null? fragment) (cons arg '())
+	(begin (let   [(ch (car fragment) ) (tail (cdr fragment)) ]
+		 (cond
+		  (( char=? ch #\:)
+		   ( if (null? opt)
+				     (decode-arg tail arg opt)
+				     (decode-arg tail (cons (reverse opt) arg) '()))
+		   )
+		  ((char=? ch  #\#)  (cons  (reverse (cons (reverse opt) arg)) tail))
+		  (else (decode-arg tail arg (cons ch opt)))))))))
+  
   (define cmd "!!get::1#")
 
   (define decode-cmd
@@ -32,11 +45,11 @@
 	    (let [(ch (car msg)) (tail (cdr msg)) ]
 	      (cond
 	       ((char=? ch #\!)(begin
-				 (let [(tuple  (decode-op tail '()))]
+				 (let [(tuple  (decode-op tail '() ))]
 				   (decode-cmd (cdr tuple) (car tuple) args)
 				   )))
 	       ((char=? ch #\:)(begin
-				 (let [(tuple  (decode-arg tail '()))]
+				 (let [(tuple  (decode-arg tail '() '()))]
 				   (decode-cmd (cdr tuple) op (car tuple))
 				   ))))
 	      )))))
