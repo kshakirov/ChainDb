@@ -1,6 +1,6 @@
 (import
  (chezscheme)
- (chainDb parser)
+ (chainDb commands parser)
  )
 
 

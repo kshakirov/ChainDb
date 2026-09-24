@@ -1,4 +1,4 @@
-(library (chainDb parser)
+(library (chainDb commands parser)
   ;;  (export  test-cmd execute-get  execute-heavy-scan execute-very-heavy-scan)
   (export  decode-cmd )
    (import

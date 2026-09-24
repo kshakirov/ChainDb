@@ -5,8 +5,8 @@
   (import
    (chezscheme)
    ;;(chainDb dispatcher)
-   (chainDb storage)
-   (chainDb parser)
+   (chainDb commands storage)
+   (chainDb commands parser)
    )
 
   (define (get-key-closure key yield)

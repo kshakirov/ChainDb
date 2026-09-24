@@ -1,4 +1,4 @@
-(library (chainDb storage)
+(library (chainDb commands storage)
   (export put-k-value  get-k-value)
   (import
    (chezscheme)
