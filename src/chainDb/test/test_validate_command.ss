@@ -1,33 +1,30 @@
 (import
  (chezscheme)
+ (chainDb commands)
  (chainDb commands parser)
  )
 
 
 
-;;((run-cmd "test" test-yield))
-
-
 
 (assert (string=? (car (decode-cmd (string->list "!get::1#") '() '())) "get"))
-(cdr (decode-cmd (string->list "!put::1#") '() '()))
 (assert(equal? (cdr (decode-cmd (string->list "!get::1#") '() '())) '((#\1))))
 (assert(equal? (cdr (decode-cmd (string->list "!get::1::2#") '() '())) '((#\1) (#\2))))
 (assert(equal? (cdr (decode-cmd (string->list "!get::1::25::63#") '() '())) '((#\1) (#\2 #\5) (#\6 #\3) )))
 
-;; (assert (string=? (car (decode-cmd (string->list "!put::1::23#") '() '())) "put"))
-(cdr (decode-cmd (string->list "!put::1::45#") '() '()))
-
-;;(assert (string=?(cdr (decode-cmd (string->list "!put::1::45#") '() '())) "45"))
+;;;;;;;;;;;;;;;;;;;;;; commands ;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; (define decode-arg
-;;   (lambda (fragment arg opt)
-;;     (if (null? fragment) (cons arg '())
-;; 	(begin (let   [(ch (car fragment) ) (tail (cdr fragment)) ]
-;; 		 (cond
-;; 		  (( char=? ch #\:)( if (null? opt)(decode-arg tail arg opt) (decode-arg tail (cons opt arg) '())))
-;; 		  ((char=? ch  #\#)  (cons  (reverse (cons opt arg)) tail))
-;; 		  (else (decode-arg tail arg (cons ch opt)))))))))
+(let* [(put-payload (string->bytevector "!put::a::2#" (native-transcoder)))
+       (get-payload (string->bytevector "!get::a#" (native-transcoder)))
+       (yield-lambda (lambda (x) (format #t"~n Result is ~a ~n" x)))
+       (get-cmd (run-cmd get-payload yield-lambda))
+       (put-cmd (run-cmd put-payload #t))]
+  (begin
+    (display put-cmd )
+    (put-cmd)
+    (assert (equal? (get-cmd) "2"))
+    ))
+  
 
-;;(decode-arg (string->list ":1::3::5::6#A") '() '())
+

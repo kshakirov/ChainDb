@@ -18,7 +18,7 @@
 	     (display (string-append "Not found by  " key)))
 	  (yield (string-append "yielding : test_validate key -> ["  key " ]\n" ))
 	  (display "After yield \n")
-	  ))
+	  found))
       ))
 
   (define (put-key-value-closure key value)
