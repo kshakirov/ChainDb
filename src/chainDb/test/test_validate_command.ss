@@ -21,7 +21,6 @@
        (get-cmd (run-cmd get-payload yield-lambda))
        (put-cmd (run-cmd put-payload #t))]
   (begin
-    (display put-cmd )
     (put-cmd)
     (assert (equal? (get-cmd) "2"))
     ))
