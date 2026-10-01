@@ -13,15 +13,6 @@
 		    ((char=? ch  #\:)   (cons (list->string (reverse op)) tail ))
 		    (else (decode-op tail (cons ch op)))))))))
 
-  ;; (define decode-arg
-  ;;   (lambda (fragment arg optional)
-  ;;     (if (null? fragment) (cons arg '())
-  ;; 	  (begin (let   [(ch (car fragment) ) (tail (cdr fragment)) ]
-  ;; 		   (cond
-  ;; 		    (( char=? ch #\:) (decode-arg tail arg))
-  ;; 		    ((char=? ch  #\#)  (cons  (list->string (reverse arg)) tail))
-  ;; 		    (else (decode-arg tail (cons ch optional)))))))))
-
 
   (define decode-arg
   (lambda (fragment arg opt)
@@ -36,8 +27,6 @@
 		  ((char=? ch  #\#)  (cons  (reverse (cons (reverse opt) arg)) tail))
 		  (else (decode-arg tail arg (cons ch opt)))))))))
   
-  (define cmd "!!get::1#")
-
   (define decode-cmd
     (lambda (msg op args)
       (if (null? msg) (cons op args)
