@@ -7,10 +7,10 @@
 
 
 
-(assert (string=? (car (decode-cmd (string->list "!get::1#") '() '())) "get"))
-(assert(equal? (cdr (decode-cmd (string->list "!get::1#") '() '())) '((#\1))))
-(assert(equal? (cdr (decode-cmd (string->list "!get::1::2#") '() '())) '((#\1) (#\2))))
-(assert(equal? (cdr (decode-cmd (string->list "!get::1::25::63#") '() '())) '((#\1) (#\2 #\5) (#\6 #\3) )))
+(assert (equal? (car (decode-cmd (bytevector->u8-list(string->bytevector "!get::1#"(native-transcoder))) '() '())) 'get))
+(assert (equal? (cdr (decode-cmd (bytevector->u8-list(string->bytevector "!get::1#"(native-transcoder))) '() '())) '((49))))
+
+(assert (equal? (cdr (decode-cmd (bytevector->u8-list(string->bytevector "!get::25::63#"(native-transcoder))) '() '())) '((50 53) (54 51))))
 
 ;;;;;;;;;;;;;;;;;;;;;; commands ;;;;;;;;;;;;;;;;;;;;;;
 
@@ -22,8 +22,10 @@
        (put-cmd (run-cmd put-payload #t))]
   (begin
     (put-cmd)
-    (assert (equal? (get-cmd) "2"))
+ (assert (equal? (get-cmd) #vu8(50)))
     ))
-  
+
+
+
 
 

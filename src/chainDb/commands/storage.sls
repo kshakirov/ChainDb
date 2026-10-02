@@ -4,7 +4,9 @@
    (chezscheme)
    )
 
-  (define db (make-hashtable string-hash string=?))
+;;  (define db (make-hashtable string-hash string=?))
+  (define db
+  (make-hashtable equal-hash bytevector=?))
   (define put-k-value
     (lambda (k v)
      (hashtable-set!  db k v)
