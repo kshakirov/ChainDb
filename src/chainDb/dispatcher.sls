@@ -3,12 +3,19 @@
   (import
 ;;   (rnrs)
    (chezscheme)
+   (chainDb pipe)
+   (chainDb commands)
    )
   (define *ready-queue* '())              ; Очередь готовых задач
   (define *dispatcher-continuation* #f)    ; Точка аварийного возврата в диспетчер
   (define make-dispatcher-sleep
     (lambda (t)
       (sleep (make-time 'time-duration 0 t))
+      (let [(vector-of-vectors  (poll-fifo-source)  )]
+	(let [ (task (run-cmd vector-of-vectors async-yield))]
+	(when task
+	  (spawn task)
+	)))
       (run-dispatcher)
       )
     )
@@ -33,7 +40,7 @@
   (define (run-dispatcher)
     (if (null? *ready-queue*)
 	(begin
-          (display "\n[ENGINE] === ВСЕ ЗАДАЧИ В ОЧЕРЕДИ ВЫПОЛНЕНЫ! БАЗА СТАБИЛЬНА =ЗАСЫПАЮ ==\n")
+          ;;(display "\n[ENGINE] === ВСЕ ЗАДАЧИ В ОЧЕРЕДИ ВЫПОЛНЕНЫ! БАЗА СТАБИЛЬНА =ЗАСЫПАЮ ==\n")
 	  (make-dispatcher-sleep 5)
           #t)
 	(begin

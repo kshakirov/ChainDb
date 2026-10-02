@@ -1,45 +1,54 @@
 
 (library (chainDb commands)
-  (export  test-cmd execute-get  execute-heavy-scan execute-very-heavy-scan) 
+  ;;  (export  test-cmd execute-get  execute-heavy-scan execute-very-heavy-scan)
+  (export  run-cmd )
   (import
-   (rnrs)
-   (chainDb dispatcher)
+   (chezscheme)
+   (chainDb commands storage)
+   (chainDb commands parser)
    )
 
-  (define (test-cmd t) (display "testing module"))
-  (define (execute-get key)
-    (display (string-append "   [API EXECUTOR] Выполняю GET для ключа: '" key "'\n"))
-    (display (string-append "   [API EXECUTOR] Значение найдено в памяти за O(1). Результат отправлен.\n")))
+  (define (get-key-closure key yield)
+    (lambda()
+      (begin 
+	(display (string-append "procedure get-kye "  " -> the parameter, before yielding ..\n"))
+	(let ((found (get-k-value key) ))
+	  (if  found (display (string-append "Found value " "\n"))
+	     (display (string-append "Not found by" "\n")))
+	  (yield (string-append "yielding : \n" "\n" ))
+	  (display "After yield \n")
+	  found))
+      ))
 
-  ;; Имитация тяжелого запроса (KEYS * / SCAN), требующего квантования
-  (define (execute-heavy-scan)
-    (display "   [API EXECUTOR] Стартую тяжелое сканирование индексов...\n")
-    (display "   [API EXECUTOR] Просканировано первые 1000 ключей...\n")
-    (async-yield "KEYS *") ; Первая пауза
-    
-    (display "   [API EXECUTOR] Курсор проснулся точно в той же точке. Сканирую следующие 1000 ключей...\n")
-    (async-yield "KEYS *") ; Вторая пауза
-    
-    (display "   [API EXECUTOR] Финал сканирования. Индекс полностью обработан.\n"))
-
-
-  (define (execute-very-heavy-scan)
-  ;;  (lambda ()
-      (display "   [API EXECUTOR] Стартую тяжелое сканирование индексов...\n")
-      (let loop ((i 0))
-	(when ( < i 1000000)
-	  (when (= (mod i 5000) 0)
-	    (display "   [API EXECUTOR] Просканировано первые 50000 ключей...\n")
-	    (async-yield "KEYS *") ; Первая пауза
-	    (display "   [API EXECUTOR] Курсор проснулся точно в той же точке. Сканирую следующие 1000 ключей...\n")
-
-	    (display i )
-	    (display "\n")
-
-	    )
-	  (loop (+ i 1))))
-      (display "   [API EXECUTOR] Финал сканирования. Индекс полностью обработан.\n")
+  (define (put-key-value-closure key value)
+    (lambda()
+      (begin 
+;;	(display (string-append "procedure put-key " key " -> value " value ))
+	(put-k-value key value)
+	  ))
       )
-;;    )
 
-  )
+
+  (define (create-get-key-closure-procedure param yield)
+    (lambda()
+      (get-key-closure param yield)
+      ))
+
+    (define (create-put-key-value-closure-procedure key value)
+    (lambda()
+      (put-key-value-closure key value)
+      ))
+
+  (define( run-cmd msg yield)
+    (if (= (bytevector-length msg) 0) #f
+	(begin
+	  (let* ((cmd ( bytevector->u8-list msg))
+		 (parsed-cmd (decode-cmd cmd  '() '()))
+		 (opcode (car parsed-cmd ))
+		 (args (cdr parsed-cmd))
+		 (key (u8-list->bytevector (car args))))
+	    (case opcode 
+		((get) ((create-get-key-closure-procedure key yield)))
+		((put)((create-put-key-value-closure-procedure key  (u8-list->bytevector (cadr args)))))
+	  ))))
+  ))
