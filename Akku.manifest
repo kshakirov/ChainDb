@@ -1,12 +1,11 @@
 #!r6rs ; -*- mode: scheme; coding: utf-8 -*-
 (import (akku format manifest))
 
-(akku-package ("scheme_coding" "1.0.0-alpha.0")
-  (synopsis "I did not edit Akku.manifest")
+(akku-package ("chaindb" "0.1.0-alpha.1")
+  (synopsis "A continuation-driven in-memory database for Chez Scheme")
   (description
-   "Please change the synopsis and description before publish the package."
-   "Multiple strings in the description will become separate paragraphs.")
+   "ChainDb is an experimental single-threaded runtime and in-memory database."
+   "It combines cooperative continuations, a dispatcher, non-blocking FIFO input, byte-native command decoding, and bytevector-backed storage.")
   (authors "kshakirov")
   (license "MIT")
-  (depends ("chez-srfi" ">=0.0.0-akku <1.0.0"))
 )

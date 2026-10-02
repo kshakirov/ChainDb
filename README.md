@@ -1,17 +1,65 @@
-# ChainDB: High-Performance Cooperative In-Memory Storage
+# ChainDb
 
-**ChainDB** — это однопоточное высокопроизводительное In-Memory хранилище, разработанное с нуля на языке Scheme (рантайм Chez Scheme). Проект полностью избавлен от «проклятия тяжелых команд» (таких как `KEYS *`), блокирующих всё ядро классического Redis, за счет применения низкоуровневой Stackful-асинхронности.
+ChainDb is an experimental single-threaded runtime and in-memory database written in Chez Scheme.
 
-## 🎯 Главная цель и фишка проекта
-Обеспечение абсолютной отзывчивости однопоточного вычислительного ядра базы данных при выполнении конкурентных запросов любой сложности. Тяжелые операции (сканирование индексов, мерж деревьев, репликация) пишутся как чистый линейный код, но умеют добровольно засыпать на середине выполнения (`yield`), уступая дорогу быстрым командам (`GET`/`SET`), а затем просыпаться точно в исходной точке вычисления с полным сохранением локального контекста.
+The project is built from the mechanism upward:
 
-## 🧱 Три архитектурных кирпича ChainDB
+```text
+continuation → scheduler/ready queue → event loop → async I/O → protocol → commands → storage
+```
 
-1. **Диспетчер (Event Loop)**: Управляет не потоками ОС, а очередью продолжений (`continuations queue`), фиксируемых через `call/cc`. Приостановка задач, ожидающих сетевого I/O, происходит мгновенно в рамках одного системного потока.
-2. **Живые Курсоры (Zero-Copy Iterators)**: Ленивые, стекозависимые (`stackful`) генераторы для стриминга данных клиентам. Точка прерывания выполнения может находиться на любой глубине вложенности функций ядра.
-3. **Асинхронные Примитивы (Promises / Каналы)**: Механизмы умной блокировки и разблокировки транзакций без замерзания системного потока базы.
+The current alpha proves one complete path through that stack. A POSIX FIFO is polled without blocking the runtime, incoming bytes are decoded into commands, the dispatcher schedules command thunks, and an in-memory hash table stores bytevector keys and values. `GET` can yield through a captured continuation and later resume; short operations such as `PUT` complete in one dispatcher turn.
 
-## 🔬 Теоретический базис
-* **Spaghetti Stack (Chez Scheme)**: Аллокация фреймов стека в куче (`heap`) преобразует операцию `call/cc` в дешевое действие со сложностью $O(1)$, исключая копирование байт памяти и промахи кэша процессора (`Cache Misses`).
-* **Изоморфизм Карри-Ховарда**: `call/cc` реализует тип закона Пирса $((A \to B) \to A) \to A$, транслируя силу классической логики в рантайм базы данных для управления вектором выполнения.
+## Implemented in the alpha
 
+- cooperative task queue based on `call/cc`;
+- non-blocking FIFO polling and multi-chunk bytevector accumulation;
+- byte-native command parser with symbolic opcodes;
+- `PUT` and `GET` command tasks;
+- content-based bytevector keys using `equal-hash` and `bytevector=?`;
+- focused parser, command/storage, and FIFO tests.
+
+The command protocol is intentionally small and is not intended to clone Redis. It will grow from ChainDb's runtime model and actual requirements.
+
+## Layout
+
+```text
+bin/main.sps                    runtime entry point
+src/chainDb/dispatcher.sls      scheduler and continuation-based yield
+src/chainDb/pipe.sls            non-blocking FIFO source
+src/chainDb/commands.sls        command-to-task translation
+src/chainDb/commands/parser.sls byte-native protocol decoder
+src/chainDb/commands/storage.sls in-memory bytevector storage
+src/chainDb/test/               executable tests
+experiments/                    research code kept outside the runtime
+docs/                           architecture notes
+context/                        local GitHub issue and wiki snapshots
+```
+
+## Running
+
+Chez Scheme must be able to find libraries under `src`:
+
+```sh
+chez --libdirs src --script bin/main.sps
+```
+
+The current FIFO source opens `my_test_pipe` in the working directory. Create it before starting the runtime:
+
+```sh
+mkfifo my_test_pipe
+```
+
+## Tests
+
+Run the byte-native parser and command/storage test with:
+
+```sh
+chez --libdirs src --script src/chainDb/test/test_validate_command.ss
+```
+
+`src/chainDb/test/test_lib_pipe.ss` is the current FIFO accumulation test. It expects `my_test_pipe` to exist and exercises a payload larger than the internal read buffer.
+
+## Status
+
+This is an alpha release and a proof of the runtime architecture. Protocol validation, client-facing responses, additional commands, and broader I/O sources remain future work.
