@@ -26,7 +26,7 @@ p;; p — указатель, или (void*)-1 = ошибка
   (display read-from-arena)
   (assert (= read-from-arena 8)))
 
- ;;(define pointer-to-arena (make-ftype-pointer arena-node p))
-;; (ftype-set!  arena-node (id pointer-to-arena) 42)
+(define node  (make-ftype-pointer arena-node p))
+(ftype-set!  arena-node (flags) node #x01)
 (assert (not (= p #xffffffffffffffff)))
 (assert (= (c-munmap p 4096) 0))
