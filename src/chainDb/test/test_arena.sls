@@ -3,7 +3,6 @@
 
 (define-ftype arena-node
   (struct
-    (id unsigned-64)
     (flags     unsigned-16)
     (prefix_len        unsigned-16)
     (prefix_off        unsigned-32 );; от arena_base
@@ -23,11 +22,11 @@
 p;; p — указатель, или (void*)-1 = ошибка
 
 (foreign-set! 'unsigned-8  p 0 8)
-(let [(read-from-arena (foreign-ref 'unsigned  p 0))]
+(let [(read-from-arena (foreign-ref 'unsigned-8  p 0))]
   (display read-from-arena)
   (assert (= read-from-arena 8)))
 
-;; (define pointer-to-arena (make-ftype-pointer arena-node p))
+ ;;(define pointer-to-arena (make-ftype-pointer arena-node p))
 ;; (ftype-set!  arena-node (id pointer-to-arena) 42)
 (assert (not (= p #xffffffffffffffff)))
 (assert (= (c-munmap p 4096) 0))
