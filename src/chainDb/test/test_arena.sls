@@ -21,6 +21,7 @@
 
 p;; p — указатель, или (void*)-1 = ошибка
 
+(assert (not (= p #xffffffffffffffff)))
 (foreign-set! 'unsigned-8  p 0 8)
 (let [(read-from-arena (foreign-ref 'unsigned-8  p 0))]
   (display read-from-arena)
@@ -28,5 +29,7 @@ p;; p — указатель, или (void*)-1 = ошибка
 
 (define node  (make-ftype-pointer arena-node p))
 (ftype-set!  arena-node (flags) node #x01)
+(assert (= (ftype-sizeof arena-node) 32))
+(assert (= (ftype-ref arena-node (flags) node) #x01))
 (assert (not (= p #xffffffffffffffff)))
 (assert (= (c-munmap p 4096) 0))
