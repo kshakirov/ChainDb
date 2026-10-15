@@ -13,12 +13,56 @@
     (reserved          unsigned-64)
     ))
 
+;; node_next — следующий свободный индекс узла;
+;; data_next — следующее свободное смещение в половине данных;
+;; node_limit и data_limit;
+;; root_idx.
+
+(define-ftype arena-header
+  (struct
+    (node_next unsigned-32)
+    (data_next  unsigned-64)
+    (node-limit unsigned-64)
+    (data-imit unsigned-64)
+    (root-idx unsigned-32)
+    ))
+
+(define (arena-at arena-base index)
+  (make-ftype-pointer arena-node (+ arena-base (* (ftype-sizeof arena-node) index))))
+
 
 (define p (c-mmap 0 4096
                   (+ PROT_READ PROT_WRITE)
                   (+ MAP_PRIVATE MAP_ANON)
                   -1 0))
 
+(define (arena-init  limit)
+  (display "body")
+  ;; здесь буде инициализация арены и создание первого узла держащего всю инфу про арену 
+  )
+
+(define (alloc-node )
+    (display "body")
+;; будет выделять следующий узел по  arena-header и записывать туда же новый индекс
+  
+  )
+
+
+(define (alloc-bytes)
+    (display "body")
+  ;; будет выделять место для байт вектора по размеру этого вектора и копировать его туда  по индексу из arena-header затем туда занести измненение
+  )
+
+
+(define(put)
+    (display "body")
+;; разместить по ключу
+  )
+
+(define (get)
+    (display "body")
+  ;;;найти по ключу 
+  )
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
 ;; арена ноде ввверху это структура или как интерпретировать 32 байта этой памяти, они конечно должы их начало кратно 32 
 (assert (not (= p #xffffffffffffffff)))
@@ -39,8 +83,6 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert (not (= p #xffffffffffffffff)))
 
 
-(define (arena-at arena-base index)
-  (make-ftype-pointer arena-node (+ arena-base (* (ftype-sizeof arena-node) index))))
 
 
 (define node-2 (make-ftype-pointer arena-node (+  p (ftype-sizeof arena-node))))
@@ -51,7 +93,7 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (let [(arena-ptr (arena-at p 10)) ]
   (ftype-set! arena-node (prefix_len) arena-ptr #x08)
   (assert (= (ftype-ref  arena-node (prefix_len) arena-ptr) #x08)))
-  
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
