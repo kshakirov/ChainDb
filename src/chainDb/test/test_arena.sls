@@ -28,7 +28,7 @@
     ))
 
 (define (arena-at arena-base index)
-  (make-ftype-pointer arena-node (+ arena-base (* (ftype-sizeof arena-node) index))))
+  (make-ftype-pointer arena-node (+ arena-base  (* (ftype-sizeof arena-node) index))))
 
 
 (define (create-arena size)
@@ -57,7 +57,7 @@
     (ftype-set! arena-header (data_limit) arena-ptr data-limit)
     (ftype-set! arena-header (node_limit) arena-ptr node-limit)
     (ftype-set! arena-header (data_next) arena-ptr data-next)
-    (ftype-set! arena-node (flags) root-ptr #x01)
+    (ftype-set! arena-node (flags) root-ptr #x00) ;;explicilty empty
     
   ;; здесь буде инициализация арены и создание первого узла держащего всю инфу про арену 
   ))
