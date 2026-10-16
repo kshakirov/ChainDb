@@ -22,7 +22,7 @@
   (struct
     (data_next  unsigned-64)
     (node_limit unsigned-64)
-    (data-limit unsigned-64)
+    (data_limit unsigned-64)
     (node_next unsigned-32)
     (root_idx unsigned-32)
     ))
@@ -44,9 +44,21 @@
                   -1 0))
 
 (define (arena-init  base size)
-  (display "size")
-  (let [(arena-ptr (make-ftype-pointer  arena-header base ))]
-    (ftype-set! arena-header (node_next) arena-ptr 1) 
+
+  (let* [(arena-ptr (make-ftype-pointer  arena-header base ))
+	 (usable (- size 32))
+	 (data-next (floor (/ size 2)))
+	 (node-limit (floor (/ usable 64)))
+	 (data-limit size)
+	 (root-ptr (make-ftype-pointer arena-node (+ base (ftype-sizeof arena-header))))
+	 ]
+    (ftype-set! arena-header (node_next) arena-ptr 2)
+    (ftype-set! arena-header (root_idx) arena-ptr 1)
+    (ftype-set! arena-header (data_limit) arena-ptr data-limit)
+    (ftype-set! arena-header (node_limit) arena-ptr node-limit)
+    (ftype-set! arena-header (data_next) arena-ptr data-next)
+    (ftype-set! arena-node (flags) root-ptr #x01)
+    
   ;; здесь буде инициализация арены и создание первого узла держащего всю инфу про арену 
   ))
 
@@ -81,7 +93,7 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert (not (= p #xffffffffffffffff)))
 (foreign-set! 'unsigned-8  p 0 8)
 (let [(read-from-arena (foreign-ref 'unsigned-8  p 0))]
-  (display read-from-arena)
+;;  (display read-from-arena)
   (assert (= read-from-arena 8)))
 
 ;; устанавливаем указатель на начало арены это наш логический ноль
@@ -113,14 +125,20 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; arena -init ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define arena-size 4096)
 
-(define arena (create-arena 4096))
+(define arena (create-arena arena-size))
 
 (assert (= (ftype-sizeof arena-header) 32))
 
 (arena-init arena 4096)
 (define arena-header-ptr (make-ftype-pointer arena-header arena))
-(assert (= (ftype-ref  arena-header (node_next) arena-header-ptr) 1))
+(assert (= (ftype-ref  arena-header (node_next) arena-header-ptr) 2))
+(assert (= (ftype-ref  arena-header (root_idx) arena-header-ptr) 1))
+(display (ftype-ref  arena-header (data_next) arena-header-ptr))
+(assert (= (ftype-ref  arena-header (node_limit) arena-header-ptr) 63))
+(assert (= (ftype-ref  arena-header (data_limit) arena-header-ptr) 4096))
+(assert (= (ftype-ref  arena-header (data_next) arena-header-ptr) 2048))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(assert (= (c-munmap arena 4096) 0))
+(assert (= (c-munmap arena arena-size) 0))
