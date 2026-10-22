@@ -67,14 +67,16 @@
   (let* [
 	 (header (make-ftype-pointer arena-header arena-base))
 	 (next-node (ftype-ref arena-header (node_next) header ))
-	 (data-limit (ftype-ref arena-header (data_limit) header))
+	 (node-limit (ftype-ref arena-header (node_limit) header))
 	 ]
-    (if (= next-node data-limit) -1
-	(+ next-node 1)
+    (if (>  next-node node-limit) #f 
+	(begin
+	  (ftype-set! arena-header (node_next) header (+ next-node 1))
+	  next-node
     )
 ;; будет выделять следующий узел по  arena-header и записывать туда же новый индекс
   
-  ))
+  )))
 
 
 (define (alloc-bytes)
@@ -147,7 +149,7 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert (= (ftype-ref  arena-header (node_limit) arena-header-ptr) 63))
 (assert (= (ftype-ref  arena-header (data_limit) arena-header-ptr) 4096))
 (assert (= (ftype-ref  arena-header (data_next) arena-header-ptr) 2048))
-(assert(= 3  (alloc-node arena)))
+(assert(= 2  (alloc-node arena)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (assert (= (c-munmap arena arena-size) 0))
