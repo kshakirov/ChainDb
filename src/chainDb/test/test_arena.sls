@@ -107,7 +107,22 @@
   ;;;найти по ключу 
     )
 
-
+(define (test-create-node arena-base segment-vector)
+  (let* [
+	 (node-idx (alloc-node arena-base))
+	 (data-offset (alloc-bytes arena-base segment-vector))
+	 (node (arena-at arena-base  node-idx))
+	 (prefix-len (bytevector-length segment-vector))
+	       
+	 ]
+	 (display "Adding  Node \n")
+	 (ftype-set! arena-node (prefix_off) node data-offset)
+	 (ftype-set! arena-node (prefix_len) node prefix-len)
+;;	 (ftype-set! arena-node (first_child) node prefix-len)
+	 
+	 
+	 
+  ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
@@ -164,6 +179,7 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert(= 2  (alloc-node arena)))
 (assert ( =  2048 (alloc-bytes arena #vu8(1 2 3))))
 (assert (= (foreign-ref 'unsigned-8 arena 2048) 1))
+(test-create-node arena (string->bytevector "node/1" (native-transcoder)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (assert (= (c-munmap arena arena-size) 0))
