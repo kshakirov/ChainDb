@@ -79,10 +79,22 @@
   )))
 
 
-(define (alloc-bytes)
-    (display "body")
+(define (alloc-bytes arena-base vector)
+  (let* [
+  	 (header (make-ftype-pointer arena-header arena-base))
+	 (data-next (ftype-ref arena-header (data_next) header ))
+	 (data-limit (ftype-ref arena-header (data_limit) header))
+	 (current-data-size (bytevector-length vector))
+	 ]
+        (if (>  (+ data-next current-data-size) data-limit) #f
+	(begin
+	  (ftype-set! arena-header (data_next) header (+ data-next current-data-size))
+	  (c-memcpy (+ arena-base data-next) vector current-data-size)
+	  data-next 
+    )
+	 
   ;; будет выделять место для байт вектора по размеру этого вектора и копировать его туда  по индексу из arena-header затем туда занести измненение
-  )
+  )))
 
 
 (define(put)
@@ -150,6 +162,8 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert (= (ftype-ref  arena-header (data_limit) arena-header-ptr) 4096))
 (assert (= (ftype-ref  arena-header (data_next) arena-header-ptr) 2048))
 (assert(= 2  (alloc-node arena)))
+(assert ( =  2048 (alloc-bytes arena #vu8(1 2 3))))
+(assert (= (foreign-ref 'unsigned-8 arena 2048) 1))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (assert (= (c-munmap arena arena-size) 0))
