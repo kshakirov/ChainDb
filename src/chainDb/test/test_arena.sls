@@ -62,11 +62,19 @@
   ;; здесь буде инициализация арены и создание первого узла держащего всю инфу про арену 
   ))
 
-(define (alloc-node )
-    (display "body")
+(define (alloc-node  arena-base)
+
+  (let* [
+	 (header (make-ftype-pointer arena-header arena-base))
+	 (next-node (ftype-ref arena-header (node_next) header ))
+	 (data-limit (ftype-ref arena-header (data_limit) header))
+	 ]
+    (if (= next-node data-limit) -1
+	(+ next-node 1)
+    )
 ;; будет выделять следующий узел по  arena-header и записывать туда же новый индекс
   
-  )
+  ))
 
 
 (define (alloc-bytes)
@@ -139,6 +147,7 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert (= (ftype-ref  arena-header (node_limit) arena-header-ptr) 63))
 (assert (= (ftype-ref  arena-header (data_limit) arena-header-ptr) 4096))
 (assert (= (ftype-ref  arena-header (data_next) arena-header-ptr) 2048))
+(assert(= 3  (alloc-node arena)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (assert (= (c-munmap arena arena-size) 0))
