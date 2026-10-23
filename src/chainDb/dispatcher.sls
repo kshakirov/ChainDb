@@ -41,7 +41,7 @@
     (if (null? *ready-queue*)
 	(begin
           ;;(display "\n[ENGINE] === ВСЕ ЗАДАЧИ В ОЧЕРЕДИ ВЫПОЛНЕНЫ! БАЗА СТАБИЛЬНА =ЗАСЫПАЮ ==\n")
-	  (make-dispatcher-sleep 5)
+	  (make-dispatcher-sleep 1)
           #t)
 	(begin
           ;; Захватываем точку возврата в диспетчер

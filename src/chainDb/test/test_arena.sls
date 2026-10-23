@@ -27,6 +27,7 @@
     (root_idx unsigned-32)
     ))
 
+;; we create a pointer to point to the node as an arena-node our usual only node
 (define (arena-at arena-base index)
   (make-ftype-pointer arena-node (+ arena-base  (* (ftype-sizeof arena-node) index))))
 
@@ -62,6 +63,7 @@
   ;; здесь буде инициализация арены и создание первого узла держащего всю инфу про арену 
   ))
 
+;; just get index for the new node and change root next node to its value д
 (define (alloc-node  arena-base)
 
   (let* [
@@ -78,7 +80,7 @@
   
   )))
 
-
+;; the same as above we get from the root - 1st node the counter of bytes allocated for data, return it and increase the current root data -next by the length of data vector 
 (define (alloc-bytes arena-base vector)
   (let* [
   	 (header (make-ftype-pointer arena-header arena-base))
@@ -107,17 +109,24 @@
   ;;;найти по ключу 
     )
 
-(define (test-create-node arena-base segment-vector)
+(define (create-node arena-base segment-vector value-vector)
   (let* [
 	 (node-idx (alloc-node arena-base))
 	 (data-offset (alloc-bytes arena-base segment-vector))
 	 (node (arena-at arena-base  node-idx))
 	 (prefix-len (bytevector-length segment-vector))
+	 (value-offset (alloc-bytes arena-base value-vector))
+	 (value-len (bytevector-length value-vector))
 	       
 	 ]
 	 (display "Adding  Node \n")
 	 (ftype-set! arena-node (prefix_off) node data-offset)
 	 (ftype-set! arena-node (prefix_len) node prefix-len)
+	 (ftype-set! arena-node (value_off) node value-offset)
+	 (ftype-set! arena-node (value_len) node value-len)
+	 (ftype-set! arena-node (flags) node 1)
+	 
+	 node-idx
 ;;	 (ftype-set! arena-node (first_child) node prefix-len)
 	 
 	 
@@ -179,7 +188,7 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert(= 2  (alloc-node arena)))
 (assert ( =  2048 (alloc-bytes arena #vu8(1 2 3))))
 (assert (= (foreign-ref 'unsigned-8 arena 2048) 1))
-(test-create-node arena (string->bytevector "node/1" (native-transcoder)))
+(create-node arena (string->bytevector "node/1" (native-transcoder)) (string->bytevector "some value " (native-transcoder)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (assert (= (c-munmap arena arena-size) 0))
