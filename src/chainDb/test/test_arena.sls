@@ -99,10 +99,7 @@
   )))
 
 
-(define(put)
-    (display "body")
-;; разместить по ключу
-  )
+
 
 (define (get)
     (display "body")
@@ -133,6 +130,26 @@
 	 
   ))
 
+
+
+(define (put arena-base segment-vector value-vector)
+  (let* [
+	 (header (make-ftype-pointer arena-header arena-base))
+	 (root-idx (ftype-ref arena-header (root_idx) header))
+	 (root (arena-at arena-base root-idx))
+	 (first-child (ftype-ref arena-node (first_child_idx) root))
+
+	 ]
+    (if (= 0 first-child) (begin
+			   (let [(new-node-idx (create-node arena-base segment-vector value-vector))]
+			     (display "added")
+			     (ftype-set! arena-node (first_child_idx) root  new-node-idx)
+			     new-node-idx
+			   ))
+	-1 
+	)
+    
+  ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
 ;; арена ноде ввверху это структура или как интерпретировать 32 байта этой памяти, они конечно должы их начало кратно 32 
@@ -189,6 +206,8 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert ( =  2048 (alloc-bytes arena #vu8(1 2 3))))
 (assert (= (foreign-ref 'unsigned-8 arena 2048) 1))
 (create-node arena (string->bytevector "node/1" (native-transcoder)) (string->bytevector "some value " (native-transcoder)))
+(assert (= 4 (put arena (string->bytevector "node/1" (native-transcoder)) (string->bytevector "some value " (native-transcoder)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (assert (= (c-munmap arena arena-size) 0))
