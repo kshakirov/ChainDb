@@ -149,6 +149,26 @@
 	-1 
 	)
     
+    ))
+
+(define (get arena-base segment-vector)
+(let* [
+	 (header (make-ftype-pointer arena-header arena-base))
+	 (root-idx (ftype-ref arena-header (root_idx) header))
+	 (root (arena-at arena-base root-idx))
+	 (first-child (ftype-ref arena-node (first_child_idx) root))
+	 (node (arena-at arena-base first-child))
+	 (prefix-off (ftype-ref arena-node (prefix_off) node ))
+	 (prefix-len (ftype-ref arena-node (prefix_len) node ))
+	 
+	 ]
+  (if (= prefix-len (bytevector-length segment-vector))
+      (begin
+	(display "lengths are equal")
+	)
+      )
+  
+  
   ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
