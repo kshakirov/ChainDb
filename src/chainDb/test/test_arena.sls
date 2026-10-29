@@ -166,13 +166,16 @@
 				(prefix-len  (ftype-ref arena-node (prefix_len) n))
 				(new-key-position ( + key-position  prefix-len))
 				(next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
-				(next-first-child (arena-at arena-base next-first-child-idx))
 				]
+			   
+			   (if (= 0 next-first-child-idx) #f 
+			   (let [(next-first-child (arena-at arena-base next-first-child-idx))]
+				
 			   (if (= (bytevector-length segment-vector) new-key-position) #t
 			       (if (= next-first-child 0 ) #f
 				   (loop new-key-position next-first-child))
-			   )
-			 ))
+			   ))
+			 )))
 		   #f
 		   ))
 	       )))
