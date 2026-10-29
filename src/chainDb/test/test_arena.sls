@@ -157,10 +157,10 @@
 	 ]
 	 (if ( = first-child 0) #f
 	     (begin 
-	       (let [ (node (arena-at arena-base first-child))]
+	       (let [(node (arena-at arena-base first-child)) ]
 		 (let loop [(key-position 0) (n node)]
 		   (display "")
-		   (if (segment-matches-key? arena-base n "" key-position) #t
+		   (if (segment-matches-key? arena-base n  segment-vector key-position) #t
 		   #f
 		   ))
 	       )))
