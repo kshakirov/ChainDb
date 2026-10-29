@@ -168,6 +168,19 @@
   
   ))
 
+
+(define (arena-subvector-cmp arena-base prefix-off prefix-len key key-position)
+  (let loop( (i 0) )
+    (if (= i prefix-len) #t
+	(begin
+	  (display "")
+	  (if (= (foreign-ref 'unsigned-8  (+ arena-base prefix-off i ) 0) (bytevector-u8-ref key (+ key-position i)) ) (loop (+ 1 i))
+	    #f  )
+	  
+    ))))
+    
+
+
 (define (segment-matches-key? arena-base  node  key  key-position)
   (let* [
 	 (prefix-off (ftype-ref arena-node (prefix_off) node))
@@ -175,14 +188,12 @@
 	 ]
 	 (if(not (= prefix-len (bytevector-length key ))) #f
 	    (begin
-	      (if (= (c-memcmp (+ arena-base prefix-off) key prefix-len 0))
-		  (begin ( display "matches"
-										    ))
-		  (begin
-		    (display "first brother doesn't match")
-		))))
+	      
+	      (if (= (c-memcmp (+ arena-base prefix-off) key prefix-len 0)) #t
+		  #f
+		  ))
 
-  ))
+  )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
 ;; арена ноде ввверху это структура или как интерпретировать 32 байта этой памяти, они конечно должы их начало кратно 32 
