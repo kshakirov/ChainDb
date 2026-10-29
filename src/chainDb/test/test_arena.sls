@@ -189,7 +189,7 @@
 	 (if(not (= prefix-len (bytevector-length key ))) #f
 	    (begin
 	      
-	      (if (= (c-memcmp (+ arena-base prefix-off) key prefix-len 0)) #t
+	      (if (arena-subvector-cmp arena-base prefix-off prefix-len key key-position) #t
 		  #f
 		  ))
 
