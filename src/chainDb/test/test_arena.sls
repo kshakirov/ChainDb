@@ -154,18 +154,16 @@
 	 (root-idx (ftype-ref arena-header (root_idx) header))
 	 (root (arena-at arena-base root-idx))
 	 (first-child (ftype-ref arena-node (first_child_idx) root))
-	 (node (arena-at arena-base first-child))
-	 (prefix-off (ftype-ref arena-node (prefix_off) node ))
-	 (prefix-len (ftype-ref arena-node (prefix_len) node ))
-	 
 	 ]
-  (if (= prefix-len (bytevector-length segment-vector))
-      (begin
-	(display "lengths are equal")
-	)
-      )
-  
-  
+	 (if ( = first-child 0) #f
+	     (begin 
+	       (let [ (node (arena-at arena-base first-child))]
+		 (let loop [(key-position 0) (n node)]
+		   (display "")
+		   (if (segment-matches-key? arena-base n "" key-position) #t
+		   #f
+		   ))
+	       )))
   ))
 
 
@@ -186,7 +184,7 @@
 	 (prefix-off (ftype-ref arena-node (prefix_off) node))
 	 (prefix-len (ftype-ref arena-node (prefix_len) node ))
 	 ]
-	 (if(not (= prefix-len (bytevector-length key ))) #f
+	 (if(>  prefix-len ( - (bytevector-length key ) key-position)) #f
 	    (begin
 	      
 	      (if (arena-subvector-cmp arena-base prefix-off prefix-len key key-position) #t
@@ -251,6 +249,22 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert (= (foreign-ref 'unsigned-8 arena 2048) 1))
 (create-node arena (string->bytevector "node/1" (native-transcoder)) (string->bytevector "some value " (native-transcoder)))
 (assert (= 4 (put arena (string->bytevector "node/1" (native-transcoder)) (string->bytevector "some value " (native-transcoder)))))
+
+(let* [(root (arena-at arena (ftype-ref arena-header (root_idx) arena-header-ptr)))
+	(first-child-idx (ftype-ref arena-node (first_child_idx) root))
+	(first-child (arena-at arena first-child-idx))]
+  (assert (segment-matches-key?
+	   arena first-child
+	   (string->bytevector "node/1" (native-transcoder)) 0))
+  (assert (segment-matches-key?
+	   arena first-child
+	   (string->bytevector "xxnode/1" (native-transcoder)) 2))
+  (assert (not (segment-matches-key?
+		arena first-child
+		(string->bytevector "node/2" (native-transcoder)) 0)))
+  (assert (not (segment-matches-key?
+		arena first-child
+		(string->bytevector "node/" (native-transcoder)) 0))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
