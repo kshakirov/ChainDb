@@ -101,10 +101,7 @@
 
 
 
-(define (get)
-    (display "body")
-  ;;;найти по ключу 
-    )
+
 
 (define (create-node arena-base segment-vector value-vector)
   (let* [
@@ -169,6 +166,22 @@
       )
   
   
+  ))
+
+(define (segment-matches-key? arena-base  node  key  key-position)
+  (let* [
+	 (prefix-off (ftype-ref arena-node (prefix_off) node))
+	 (prefix-len (ftype-ref arena-node (prefix_len) node ))
+	 ]
+	 (if(not (= prefix-len (bytevector-length key ))) #f
+	    (begin
+	      (if (= (c-memcmp (+ arena-base prefix-off) key prefix-len 0))
+		  (begin ( display "matches"
+										    ))
+		  (begin
+		    (display "first brother doesn't match")
+		))))
+
   ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
