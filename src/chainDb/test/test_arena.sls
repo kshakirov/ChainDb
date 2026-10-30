@@ -236,6 +236,51 @@
     (bytevector-copy! vector start tail 0 length)
     tail))
 
+(define (common-prefix-length arena-base node key key-position)
+  (let* [(prefix-off (ftype-ref arena-node (prefix_off) node))
+	 (prefix-len (ftype-ref arena-node (prefix_len) node))
+	 (key-remaining (- (bytevector-length key) key-position))
+	 (limit (min prefix-len key-remaining))]
+    (let loop [(i 0)]
+      (if (or (= i limit)
+	      (not (= (foreign-ref 'unsigned-8
+				     (+ arena-base prefix-off i) 0)
+		      (bytevector-u8-ref key (+ key-position i)))))
+	  i
+	  (loop (+ i 1))))))
+
+(define (split-node arena-base node key key-position common-length value-vector)
+  (let* [(old-prefix-off (ftype-ref arena-node (prefix_off) node))
+	 (old-prefix-len (ftype-ref arena-node (prefix_len) node))
+	 (old-value-off (ftype-ref arena-node (value_off) node))
+	 (old-value-len (ftype-ref arena-node (value_len) node))
+	 (old-flags (ftype-ref arena-node (flags) node))
+	 (old-first-child-idx (ftype-ref arena-node (first_child_idx) node))
+	 (old-child-idx (alloc-node arena-base))
+	 (old-child (arena-at arena-base old-child-idx))
+	 (new-key-position (+ key-position common-length))]
+    (ftype-set! arena-node (prefix_off) old-child (+ old-prefix-off common-length))
+    (ftype-set! arena-node (prefix_len) old-child (- old-prefix-len common-length))
+    (ftype-set! arena-node (value_off) old-child old-value-off)
+    (ftype-set! arena-node (value_len) old-child old-value-len)
+    (ftype-set! arena-node (flags) old-child old-flags)
+    (ftype-set! arena-node (first_child_idx) old-child old-first-child-idx)
+
+    (ftype-set! arena-node (prefix_len) node common-length)
+    (ftype-set! arena-node (value_off) node 0)
+    (ftype-set! arena-node (value_len) node 0)
+    (ftype-set! arena-node (flags) node 0)
+    (ftype-set! arena-node (first_child_idx) node old-child-idx)
+
+    (if (= new-key-position (bytevector-length key))
+	(update-value arena-base node value-vector)
+	(let [(new-child-idx
+	       (create-node arena-base
+			    (bytevector-tail key new-key-position)
+			    value-vector))]
+	  (ftype-set! arena-node (next_sibling_idx) old-child new-child-idx)))
+    node))
+
 (define (put  arena-base segment-vector value-vector)
   (let* [
 	 (header (make-ftype-pointer arena-header arena-base))
@@ -247,30 +292,40 @@
 	(begin 
 	  (let [(node (arena-at arena-base first-child)) ]
 	    (let loop [(key-position 0) (n node)]
-	      (if (segment-matches-key? arena-base n  segment-vector key-position)
-		  (begin
-		    (let* [
-			   (prefix-len  (ftype-ref arena-node (prefix_len) n))
-			   (new-key-position ( + key-position  prefix-len))
-			   (next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
-			   ]
-		      (if (= (bytevector-length segment-vector) new-key-position) (update-value arena-base n value-vector)
-			  (if (= next-first-child-idx 0 )
-			      (add-child arena-base n (bytevector-tail segment-vector new-key-position) value-vector)
-			      (let [(next-first-child (arena-at arena-base next-first-child-idx))]
-				(loop new-key-position next-first-child)
-				)
-			      )
-			  )
-		      )
-		    )
-		  
-		  (begin
-		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) n))]
-		      (if (= next-sibling-idx 0) (add-brother arena-base n (bytevector-tail segment-vector key-position) value-vector)
-			  (let [(next-sibling  (arena-at arena-base next-sibling-idx))]
-			    (loop key-position next-sibling )))
-			  )))
+	      (let* [(prefix-len (ftype-ref arena-node (prefix_len) n))
+		     (common-length
+		       (common-prefix-length
+			 arena-base n segment-vector key-position))]
+		(cond
+		  [(= common-length prefix-len)
+		   (let* [(new-key-position (+ key-position prefix-len))
+			  (next-first-child-idx
+			    (ftype-ref arena-node (first_child_idx) n))]
+		     (if (= (bytevector-length segment-vector) new-key-position)
+			 (update-value arena-base n value-vector)
+			 (if (= next-first-child-idx 0)
+			     (add-child
+			       arena-base n
+			       (bytevector-tail segment-vector new-key-position)
+			       value-vector)
+			     (loop
+			       new-key-position
+			       (arena-at arena-base next-first-child-idx)))))]
+		  [(= common-length 0)
+		   (let [(next-sibling-idx
+			   (ftype-ref arena-node (next_sibling_idx) n))]
+		     (if (= next-sibling-idx 0)
+			 (add-brother
+			   arena-base n
+			   (bytevector-tail segment-vector key-position)
+			   value-vector)
+			 (loop
+			   key-position
+			   (arena-at arena-base next-sibling-idx))))]
+		  [else
+		   (split-node
+		     arena-base n segment-vector key-position
+		     common-length value-vector)]))
 	      )) )))
 
   )
@@ -376,6 +431,36 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 		(string->bytevector "node/" (native-transcoder)) 0))))
 (assert (get arena  (string->bytevector "node/1" (native-transcoder))))
 (assert(not (get arena  (string->bytevector "node/2" (native-transcoder)))))
+
+(put arena
+     (string->bytevector "node/2" (native-transcoder))
+     (string->bytevector "second value" (native-transcoder)))
+
+(assert
+  (bytevector=?
+    (get arena (string->bytevector "node/1" (native-transcoder)))
+    (string->bytevector "some value " (native-transcoder))))
+(assert
+  (bytevector=?
+    (get arena (string->bytevector "node/2" (native-transcoder)))
+    (string->bytevector "second value" (native-transcoder))))
+
+(let* [(root (arena-at arena (ftype-ref arena-header (root_idx) arena-header-ptr)))
+	(common-node (arena-at arena (ftype-ref arena-node (first_child_idx) root)))
+	(old-child (arena-at arena (ftype-ref arena-node (first_child_idx) common-node)))
+	(new-child (arena-at arena (ftype-ref arena-node (next_sibling_idx) old-child)))]
+  (assert (= (ftype-ref arena-node (prefix_len) common-node) 5))
+  (assert (= (ftype-ref arena-node (flags) common-node) 0))
+  (assert (= (ftype-ref arena-node (prefix_len) old-child) 1))
+  (assert (= (ftype-ref arena-node (prefix_len) new-child) 1))
+  (assert (= (foreign-ref 'unsigned-8
+			  arena
+			  (ftype-ref arena-node (prefix_off) old-child))
+	     (char->integer #\1)))
+  (assert (= (foreign-ref 'unsigned-8
+			  arena
+			  (ftype-ref arena-node (prefix_off) new-child))
+	     (char->integer #\2))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
