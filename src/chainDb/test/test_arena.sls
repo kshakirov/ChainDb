@@ -225,6 +225,17 @@
     )
   )
 
+(define (add-child arena-base node segment-part value-vector)
+  (let [(child-idx (create-node arena-base segment-part value-vector))]
+    (ftype-set! arena-node (first_child_idx) node child-idx)
+    child-idx))
+
+(define (bytevector-tail vector start)
+  (let* [(length (- (bytevector-length vector) start))
+	 (tail (make-bytevector length))]
+    (bytevector-copy! vector start tail 0 length)
+    tail))
+
 (define (put  arena-base segment-vector value-vector)
   (let* [
 	 (header (make-ftype-pointer arena-header arena-base))
@@ -244,7 +255,8 @@
 			   (next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
 			   ]
 		      (if (= (bytevector-length segment-vector) new-key-position) (update-value arena-base n value-vector)
-			  (if (= next-first-child-idx 0 ) #f
+			  (if (= next-first-child-idx 0 )
+			      (add-child arena-base n (bytevector-tail segment-vector new-key-position) value-vector)
 			      (let [(next-first-child (arena-at arena-base next-first-child-idx))]
 				(loop new-key-position next-first-child)
 				)
@@ -255,7 +267,7 @@
 		  
 		  (begin
 		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) n))]
-		      (if (= next-sibling-idx 0) (add-brother arena-base n (bytevector-copy segment-vector key-position (bytevector-length segment-vector)) value-vector)   ; копия [start, end)))
+		      (if (= next-sibling-idx 0) (add-brother arena-base n (bytevector-tail segment-vector key-position) value-vector)
 			  (let [(next-sibling  (arena-at arena-base next-sibling-idx))]
 			    (loop key-position next-sibling )))
 			  )))
