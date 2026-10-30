@@ -34,9 +34,9 @@
 
 (define (create-arena size)
   (c-mmap 0 size
-                  (+ PROT_READ PROT_WRITE)
-                  (+ MAP_PRIVATE MAP_ANON)
-                  -1 0))
+          (+ PROT_READ PROT_WRITE)
+          (+ MAP_PRIVATE MAP_ANON)
+          -1 0))
 
 
 (define p (c-mmap 0 4096
@@ -60,8 +60,8 @@
     (ftype-set! arena-header (data_next) arena-ptr data-next)
     (ftype-set! arena-node (flags) root-ptr #x00) ;;explicilty empty
     
-  ;; здесь буде инициализация арены и создание первого узла держащего всю инфу про арену 
-  ))
+    ;; здесь буде инициализация арены и создание первого узла держащего всю инфу про арену 
+    ))
 
 ;; just get index for the new node and change root next node to its value д
 (define (alloc-node  arena-base)
@@ -75,10 +75,10 @@
 	(begin
 	  (ftype-set! arena-header (node_next) header (+ next-node 1))
 	  next-node
-    )
-;; будет выделять следующий узел по  arena-header и записывать туда же новый индекс
-  
-  )))
+	  )
+	;; будет выделять следующий узел по  arena-header и записывать туда же новый индекс
+	
+	)))
 
 ;; the same as above we get from the root - 1st node the counter of bytes allocated for data, return it and increase the current root data -next by the length of data vector 
 (define (alloc-bytes arena-base vector)
@@ -88,15 +88,15 @@
 	 (data-limit (ftype-ref arena-header (data_limit) header))
 	 (current-data-size (bytevector-length vector))
 	 ]
-        (if (>  (+ data-next current-data-size) data-limit) #f
+    (if (>  (+ data-next current-data-size) data-limit) #f
 	(begin
 	  (ftype-set! arena-header (data_next) header (+ data-next current-data-size))
 	  (c-memcpy (+ arena-base data-next) vector current-data-size)
 	  data-next 
-    )
-	 
-  ;; будет выделять место для байт вектора по размеру этого вектора и копировать его туда  по индексу из arena-header затем туда занести измненение
-  )))
+	  )
+	
+	;; будет выделять место для байт вектора по размеру этого вектора и копировать его туда  по индексу из arena-header затем туда занести измненение
+	)))
 
 
 
@@ -111,21 +111,21 @@
 	 (prefix-len (bytevector-length segment-vector))
 	 (value-offset (alloc-bytes arena-base value-vector))
 	 (value-len (bytevector-length value-vector))
-	       
+	 
 	 ]
-	 (display "Adding  Node \n")
-	 (ftype-set! arena-node (prefix_off) node data-offset)
-	 (ftype-set! arena-node (prefix_len) node prefix-len)
-	 (ftype-set! arena-node (value_off) node value-offset)
-	 (ftype-set! arena-node (value_len) node value-len)
-	 (ftype-set! arena-node (flags) node 1)
-	 
-	 node-idx
-;;	 (ftype-set! arena-node (first_child) node prefix-len)
-	 
-	 
-	 
-  ))
+    (display "Adding  Node \n")
+    (ftype-set! arena-node (prefix_off) node data-offset)
+    (ftype-set! arena-node (prefix_len) node prefix-len)
+    (ftype-set! arena-node (value_off) node value-offset)
+    (ftype-set! arena-node (value_len) node value-len)
+    (ftype-set! arena-node (flags) node 1)
+    
+    node-idx
+    ;;	 (ftype-set! arena-node (first_child) node prefix-len)
+    
+    
+    
+    ))
 
 
 
@@ -138,48 +138,48 @@
 
 	 ]
     (if (= 0 first-child) (begin
-			   (let [(new-node-idx (create-node arena-base segment-vector value-vector))]
-			     (display "added")
-			     (ftype-set! arena-node (first_child_idx) root  new-node-idx)
-			     new-node-idx
-			   ))
+			    (let [(new-node-idx (create-node arena-base segment-vector value-vector))]
+			      (display "added")
+			      (ftype-set! arena-node (first_child_idx) root  new-node-idx)
+			      new-node-idx
+			      ))
 	-1 
 	)
     
     ))
 
 (define (get arena-base segment-vector)
-(let* [
+  (let* [
 	 (header (make-ftype-pointer arena-header arena-base))
 	 (root-idx (ftype-ref arena-header (root_idx) header))
 	 (root (arena-at arena-base root-idx))
 	 (first-child (ftype-ref arena-node (first_child_idx) root))
 	 ]
-	 (if ( = first-child 0) #f
-	     (begin 
-	       (let [(node (arena-at arena-base first-child)) ]
-		 (let loop [(key-position 0) (n node)]
-		   (display "")
-		   (if (segment-matches-key? arena-base n  segment-vector key-position)
-		       (begin
-			 (let* [
-				(prefix-len  (ftype-ref arena-node (prefix_len) n))
-				(new-key-position ( + key-position  prefix-len))
-				(next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
-				]
-			   
-			   (if (= 0 next-first-child-idx) #f 
-			   (let [(next-first-child (arena-at arena-base next-first-child-idx))]
-				
-			   (if (= (bytevector-length segment-vector) new-key-position) #t
-			       (if (= next-first-child 0 ) #f
-				   (loop new-key-position next-first-child))
-			   ))
-			 )))
-		   #f
-		   ))
-	       )))
-  ))
+    (if ( = first-child 0) #f
+	(begin 
+	  (let [(node (arena-at arena-base first-child)) ]
+	    (let loop [(key-position 0) (n node)]
+	      (if (segment-matches-key? arena-base n  segment-vector key-position)
+		  (begin
+		    (let* [
+			   (prefix-len  (ftype-ref arena-node (prefix_len) n))
+			   (new-key-position ( + key-position  prefix-len))
+			   (next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
+			   ]
+		      (if (= (bytevector-length segment-vector) new-key-position) #t
+			  (if (= next-first-child-idx 0 ) #f
+			      (let [(next-first-child (arena-at arena-base next-first-child-idx))]
+				(loop new-key-position next-first-child)
+				)
+			      )
+			  )
+		      )
+		    )
+		  
+		  #f)
+	      )) )))
+
+  )
 
 
 (define (arena-subvector-cmp arena-base prefix-off prefix-len key key-position)
@@ -188,10 +188,10 @@
 	(begin
 	  (display "")
 	  (if (= (foreign-ref 'unsigned-8  (+ arena-base prefix-off i ) 0) (bytevector-u8-ref key (+ key-position i)) ) (loop (+ 1 i))
-	    #f  )
+	      #f  )
 	  
-    ))))
-    
+	  ))))
+
 
 
 (define (segment-matches-key? arena-base  node  key  key-position)
@@ -199,21 +199,21 @@
 	 (prefix-off (ftype-ref arena-node (prefix_off) node))
 	 (prefix-len (ftype-ref arena-node (prefix_len) node ))
 	 ]
-	 (if(>  prefix-len ( - (bytevector-length key ) key-position)) #f
-	    (begin
-	      
-	      (if (arena-subvector-cmp arena-base prefix-off prefix-len key key-position) #t
-		  #f
-		  ))
+    (if(>  prefix-len ( - (bytevector-length key ) key-position)) #f
+       (begin
+	 
+	 (if (arena-subvector-cmp arena-base prefix-off prefix-len key key-position) #t
+	     #f
+	     ))
 
-  )))
+       )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
 ;; арена ноде ввверху это структура или как интерпретировать 32 байта этой памяти, они конечно должы их начало кратно 32 
 (assert (not (= p #xffffffffffffffff)))
 (foreign-set! 'unsigned-8  p 0 8)
 (let [(read-from-arena (foreign-ref 'unsigned-8  p 0))]
-;;  (display read-from-arena)
+  ;;  (display read-from-arena)
   (assert (= read-from-arena 8)))
 
 ;; устанавливаем указатель на начало арены это наш логический ноль
@@ -266,8 +266,8 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert (= 4 (put arena (string->bytevector "node/1" (native-transcoder)) (string->bytevector "some value " (native-transcoder)))))
 
 (let* [(root (arena-at arena (ftype-ref arena-header (root_idx) arena-header-ptr)))
-	(first-child-idx (ftype-ref arena-node (first_child_idx) root))
-	(first-child (arena-at arena first-child-idx))]
+       (first-child-idx (ftype-ref arena-node (first_child_idx) root))
+       (first-child (arena-at arena first-child-idx))]
   (assert (segment-matches-key?
 	   arena first-child
 	   (string->bytevector "node/1" (native-transcoder)) 0))
