@@ -176,7 +176,12 @@
 		      )
 		    )
 		  
-		  #f)
+		  (begin
+		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) n))]
+		      (if (= next-sibling-idx 0) #f
+			  (let [(next-sibling  (arena-at arena-base next-sibling-idx))]
+			    (loop key-position next-sibling )))
+			  )))
 	      )) )))
 
   )
@@ -280,6 +285,8 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
   (assert (not (segment-matches-key?
 		arena first-child
 		(string->bytevector "node/" (native-transcoder)) 0))))
+(assert (get arena  (string->bytevector "node/1" (native-transcoder))))
+(assert(not (get arena  (string->bytevector "node/2" (native-transcoder)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
