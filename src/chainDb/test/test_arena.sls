@@ -213,7 +213,17 @@
     (ftype-set! arena-node (value_off) node value-offset)
     (ftype-set! arena-node (value_len) node value-len)
     (ftype-set! arena-node (flags) node 1)
-  ))
+    ))
+
+(define (add-brother arena-base node segment-part value-vector)
+  (let* [
+	 (brother-idx (create-node arena-base segment-part value-vector))
+	 
+	 ]
+    (ftype-set! arena-node (next_sibling_idx) node brother-idx)
+    brother-idx
+    )
+  )
 
 (define (put  arena-base segment-vector value-vector)
   (let* [
@@ -245,7 +255,7 @@
 		  
 		  (begin
 		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) n))]
-		      (if (= next-sibling-idx 0) #f
+		      (if (= next-sibling-idx 0) (add-brother arena-base n (bytevector-copy segment-vector key-position (bytevector-length segment-vector)) value-vector)   ; копия [start, end)))
 			  (let [(next-sibling  (arena-at arena-base next-sibling-idx))]
 			    (loop key-position next-sibling )))
 			  )))
