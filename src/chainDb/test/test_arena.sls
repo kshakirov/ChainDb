@@ -129,7 +129,7 @@
 
 
 
-(define (put arena-base segment-vector value-vector)
+(define (put-simple arena-base segment-vector value-vector)
   (let* [
 	 (header (make-ftype-pointer arena-header arena-base))
 	 (root-idx (ftype-ref arena-header (root_idx) header))
@@ -166,6 +166,44 @@
   )
 
 (define (get arena-base segment-vector)
+  (let* [
+	 (header (make-ftype-pointer arena-header arena-base))
+	 (root-idx (ftype-ref arena-header (root_idx) header))
+	 (root (arena-at arena-base root-idx))
+	 (first-child (ftype-ref arena-node (first_child_idx) root))
+	 ]
+    (if ( = first-child 0) #f
+	(begin 
+	  (let [(node (arena-at arena-base first-child)) ]
+	    (let loop [(key-position 0) (n node)]
+	      (if (segment-matches-key? arena-base n  segment-vector key-position)
+		  (begin
+		    (let* [
+			   (prefix-len  (ftype-ref arena-node (prefix_len) n))
+			   (new-key-position ( + key-position  prefix-len))
+			   (next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
+			   ]
+		      (if (= (bytevector-length segment-vector) new-key-position) (get-value-or-else-false arena-base n)
+			  (if (= next-first-child-idx 0 ) #f
+			      (let [(next-first-child (arena-at arena-base next-first-child-idx))]
+				(loop new-key-position next-first-child)
+				)
+			      )
+			  )
+		      )
+		    )
+		  
+		  (begin
+		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) n))]
+		      (if (= next-sibling-idx 0) #f
+			  (let [(next-sibling  (arena-at arena-base next-sibling-idx))]
+			    (loop key-position next-sibling )))
+			  )))
+	      )) )))
+
+  )
+
+(define (put  arena-base segment-vector)
   (let* [
 	 (header (make-ftype-pointer arena-header arena-base))
 	 (root-idx (ftype-ref arena-header (root_idx) header))
@@ -285,7 +323,7 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert ( =  2048 (alloc-bytes arena #vu8(1 2 3))))
 (assert (= (foreign-ref 'unsigned-8 arena 2048) 1))
 (create-node arena (string->bytevector "node/1" (native-transcoder)) (string->bytevector "some value " (native-transcoder)))
-(assert (= 4 (put arena (string->bytevector "node/1" (native-transcoder)) (string->bytevector "some value " (native-transcoder)))))
+(assert (= 4 (put-simple arena (string->bytevector "node/1" (native-transcoder)) (string->bytevector "some value " (native-transcoder)))))
 
 (let* [(root (arena-at arena (ftype-ref arena-header (root_idx) arena-header-ptr)))
        (first-child-idx (ftype-ref arena-node (first_child_idx) root))
