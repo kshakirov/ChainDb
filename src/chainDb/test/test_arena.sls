@@ -203,7 +203,19 @@
 
   )
 
-(define (put  arena-base segment-vector)
+(define (update-value arena-base node value-vector )
+    (let* [
+	 (value-offset (alloc-bytes arena-base value-vector))
+	 (value-len (bytevector-length value-vector))
+	 
+	 ]
+    (display "Updating value \n")
+    (ftype-set! arena-node (value_off) node value-offset)
+    (ftype-set! arena-node (value_len) node value-len)
+    (ftype-set! arena-node (flags) node 1)
+  ))
+
+(define (put  arena-base segment-vector value-vector)
   (let* [
 	 (header (make-ftype-pointer arena-header arena-base))
 	 (root-idx (ftype-ref arena-header (root_idx) header))
@@ -221,7 +233,7 @@
 			   (new-key-position ( + key-position  prefix-len))
 			   (next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
 			   ]
-		      (if (= (bytevector-length segment-vector) new-key-position) (get-value-or-else-false arena-base n)
+		      (if (= (bytevector-length segment-vector) new-key-position) (update-value arena-base n value-vector)
 			  (if (= next-first-child-idx 0 ) #f
 			      (let [(next-first-child (arena-at arena-base next-first-child-idx))]
 				(loop new-key-position next-first-child)
