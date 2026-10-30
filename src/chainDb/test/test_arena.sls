@@ -148,6 +148,23 @@
     
     ))
 
+(define (get-value-or-else-false arena-base node )
+  (let [(flags (ftype-ref arena-node (flags) node))]
+    (if (= flags #x01)
+	(begin
+	  (let* [
+		 (value-off (ftype-ref arena-node (value_off) node))
+		 (value-len (ftype-ref arena-node (value_len) node))
+		 (value-vector (make-bytevector value-len 0))
+		 
+		 ]
+		 (c-memcpy-rev  value-vector (+ arena-base value-off)  value-len)
+		 value-vector
+	    ))
+	  
+	#f))
+  )
+
 (define (get arena-base segment-vector)
   (let* [
 	 (header (make-ftype-pointer arena-header arena-base))
@@ -166,7 +183,7 @@
 			   (new-key-position ( + key-position  prefix-len))
 			   (next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
 			   ]
-		      (if (= (bytevector-length segment-vector) new-key-position) #t
+		      (if (= (bytevector-length segment-vector) new-key-position) (get-value-or-else-false arena-base n)
 			  (if (= next-first-child-idx 0 ) #f
 			      (let [(next-first-child (arena-at arena-base next-first-child-idx))]
 				(loop new-key-position next-first-child)
