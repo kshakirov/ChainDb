@@ -364,6 +364,7 @@
        )))
 
 
+
 (define (add-node id value arena-base)
   (let* [
 	 (id-legth (bytevector-length id))
@@ -372,6 +373,17 @@
     (bytevector-u8-set! dst  0 #x01)
     (bytevector-copy! id 0 dst 1 id-legth)
     (put arena-base dst value)
+    )
+  )
+
+(define (get-node id arena-base)
+  (let* [
+	 (id-legth (bytevector-length id))
+	 (dst (make-bytevector (+ 1  id-legth)))
+	 ]
+    (bytevector-u8-set! dst  0 #x01)
+    (bytevector-copy! id 0 dst 1 id-legth)
+    (get  arena-base dst )
     )
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
