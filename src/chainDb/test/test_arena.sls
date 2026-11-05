@@ -288,7 +288,13 @@
 	 (root (arena-at arena-base root-idx))
 	 (first-child (ftype-ref arena-node (first_child_idx) root))
 	 ]
-    (if ( = first-child 0) #f
+    (if ( = first-child 0)
+	(begin
+	  
+	       (let [(first-node-idx (create-node  arena-base segment-vector value-vector))]
+		 (ftype-set! arena-node (first_child_idx) root first-node-idx)
+		 first-node-idx)
+	      )
 	(begin 
 	  (let [(node (arena-at arena-base first-child)) ]
 	    (let loop [(key-position 0) (n node)]
