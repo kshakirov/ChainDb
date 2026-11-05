@@ -362,6 +362,18 @@
 	     ))
 
        )))
+
+
+(define (add-node id value arena-base)
+  (let* [
+	 (id-legth (bytevector-length id))
+	 (dst (make-bytevector (+ 1  id-legth)))
+	 ]
+    (bytevector-u8-set! dst  0 #x01)
+    (bytevector-copy! id 0 dst 1 id-legth)
+    (put arena-base dst value)
+    )
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
 ;; арена ноде ввверху это структура или как интерпретировать 32 байта этой памяти, они конечно должы их начало кратно 32 
