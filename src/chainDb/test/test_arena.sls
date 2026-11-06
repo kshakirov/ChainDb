@@ -386,6 +386,25 @@
     (get  arena-base dst )
     )
   )
+
+(define (add-edge  src-id label dst-id value arena-base)
+  (let* [
+	 (src-id-length (bytevector-length src-id))
+	 (label-length (bytevector-length label))
+	 (dst-id-length (bytevector-length dst-id))
+	 (out  (make-bytevector (+ 5  src-id-length 4 label-length 4 dst-id-length)))
+	]
+
+    (bytevector-u8-set! out   0 #x02)
+    (bytevector-u32-native-set! out  1 src-id-length  )
+    (bytevector-copy! src-id 0 out 5 src-id-length)
+    (bytevector-u32-native-set! out  (+ 5 src-id-length) label-length  )
+    (bytevector-copy! label 0 out (+ 5 src-id-length 4) label-length)
+    (bytevector-u32-native-set! out  (+ 9 src-id-length label-length) dst-id-length )
+    (bytevector-copy! dst-id 0 out (+ 13 src-id-length label-length) dst-id-length)
+
+    )
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
 ;; арена ноде ввверху это структура или как интерпретировать 32 байта этой памяти, они конечно должы их начало кратно 32 
