@@ -397,19 +397,19 @@
 	]
 
     (bytevector-u8-set! out   0 #x02)
-    (bytevector-u32-native-set! out  1 src-id-length  )
+    (bytevector-u32-set! out  1 src-id-length (endianness little))
     (bytevector-copy! src-id 0 out 5 src-id-length)
-    (bytevector-u32-native-set! out  (+ 5 src-id-length) label-length  )
+    (bytevector-u32-set! out  (+ 5 src-id-length) label-length (endianness little))
     (bytevector-copy! label 0 out (+ 5 src-id-length 4) label-length)
-    (bytevector-u32-native-set! out  (+ 9 src-id-length label-length) dst-id-length )
+    (bytevector-u32-set! out  (+ 9 src-id-length label-length) dst-id-length (endianness little))
     (bytevector-copy! dst-id 0 out (+ 13 src-id-length label-length) dst-id-length)
 
     (bytevector-u8-set! in    0 #x03)
-    (bytevector-u32-native-set! in  1 dst-id-length  )
+    (bytevector-u32-set! in  1 dst-id-length (endianness little))
     (bytevector-copy! dst-id 0 in  5 dst-id-length)
-    (bytevector-u32-native-set! in  (+ 5 dst-id-length) label-length  )
+    (bytevector-u32-set! in  (+ 5 dst-id-length) label-length (endianness little))
     (bytevector-copy! label 0 in  (+ 5 dst-id-length 4) label-length)
-    (bytevector-u32-native-set! in  (+ 9 dst-id-length label-length) src-id-length )
+    (bytevector-u32-set! in  (+ 9 dst-id-length label-length) src-id-length (endianness little))
     (bytevector-copy! src-id 0 in  (+ 13 dst-id-length label-length) src-id-length)
     (put arena-base  out value)
     (put arena-base  in  value)
@@ -521,6 +521,23 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 			  arena
 			  (ftype-ref arena-node (prefix_off) new-child))
 	     (char->integer #\2))))
+
+
+
+(add-node (string->bytevector "node/1"  (native-transcoder)) (string->bytevector "Pasha" (native-transcoder)) arena)
+(add-node (string->bytevector "node/2"  (native-transcoder)) (string->bytevector "Jenia" (native-transcoder)) arena)
+
+(add-edge (string->bytevector "node/1"  (native-transcoder))   (string->bytevector " friends"  (native-transcoder)) (string->bytevector "node/2"  (native-transcoder)) (string->bytevector "working together"  (native-transcoder)) arena)
+
+
+(assert (bytevector=?  (get-node  (string->bytevector "node/1"  (native-transcoder)) arena)  (string->bytevector "Pasha" (native-transcoder))))
+(assert (bytevector=?  (get-node  (string->bytevector "node/2"  (native-transcoder)) arena)  (string->bytevector "Jenia" (native-transcoder))))
+
+(assert (bytevector=? (get arena  #vu8(
+  2
+  6 0 0 0  110 111 100 101 47 49
+  8 0 0 0  32 102 114 105 101 110 100 115
+  6 0 0 0  110 111 100 101 47 50) ) (string->bytevector "working together"  (native-transcoder)) ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
