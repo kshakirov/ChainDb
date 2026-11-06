@@ -411,6 +411,8 @@
     (bytevector-copy! label 0 in  (+ 5 dst-id-length 4) label-length)
     (bytevector-u32-native-set! in  (+ 9 dst-id-length label-length) src-id-length )
     (bytevector-copy! src-id 0 in  (+ 13 dst-id-length label-length) src-id-length)
+    (put arena-base  out value)
+    (put arena-base  in  value)
 
     )
   )
