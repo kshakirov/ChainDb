@@ -393,6 +393,7 @@
 	 (label-length (bytevector-length label))
 	 (dst-id-length (bytevector-length dst-id))
 	 (out  (make-bytevector (+ 5  src-id-length 4 label-length 4 dst-id-length)))
+	 (in   (make-bytevector (+ 5  dst-id-length 4 label-length 4 src-id-length)))
 	]
 
     (bytevector-u8-set! out   0 #x02)
@@ -402,6 +403,14 @@
     (bytevector-copy! label 0 out (+ 5 src-id-length 4) label-length)
     (bytevector-u32-native-set! out  (+ 9 src-id-length label-length) dst-id-length )
     (bytevector-copy! dst-id 0 out (+ 13 src-id-length label-length) dst-id-length)
+
+    (bytevector-u8-set! in    0 #x03)
+    (bytevector-u32-native-set! in  1 dst-id-length  )
+    (bytevector-copy! dst-id 0 in  5 dst-id-length)
+    (bytevector-u32-native-set! in  (+ 5 dst-id-length) label-length  )
+    (bytevector-copy! label 0 in  (+ 5 dst-id-length 4) label-length)
+    (bytevector-u32-native-set! in  (+ 9 dst-id-length label-length) src-id-length )
+    (bytevector-copy! src-id 0 in  (+ 13 dst-id-length label-length) src-id-length)
 
     )
   )
