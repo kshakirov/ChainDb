@@ -462,24 +462,25 @@
   (let [
 	(next-first-child-idx (ftype-ref arena-node (first_child_idx) node))
 	(value (get-value-or-else-false arena-base node))
-	       ]
-		(if (= next-first-child-idx 0)
-		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) node))]
-		      (if (= next-sibling-idx 0)
-			  (display "reached the end of depth")
-			  (let [(next-sibling (arena-at arena-base next-sibling-idx))]
-			    (dfs-traverse next-sibling arena-base )
-			    )
-			  )
-		      )
-		    (let [(first-child (arena-at arena-base next-first-child-idx))]
-		      (dfs-traverse first-child arena-base)
-		      )
-		    
-		    )
+	]
+    (if value (display value)(display "no value: here will be no continuation"))
+    (if (= next-first-child-idx 0)
+	(let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) node))]
+	  (if (= next-sibling-idx 0)
+	      (display "reached the end of depth, no siblings")
+	      (let [(next-sibling (arena-at arena-base next-sibling-idx))]
+		(dfs-traverse next-sibling arena-base )
 		)
 	      )
-	     
+	  )
+	(let [(first-child (arena-at arena-base next-first-child-idx))]
+	  (dfs-traverse first-child arena-base)
+	  )
+	
+	)
+    )
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
 ;; арена ноде ввверху это структура или как интерпретировать 32 байта этой памяти, они конечно должы их начало кратно 32 
