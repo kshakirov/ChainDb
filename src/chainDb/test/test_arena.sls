@@ -459,13 +459,18 @@
   )
 
 (define (dfs-traverse node  arena-base)
-	      (let [ (next-first-child-idx (ftype-ref arena-node (first_child_idx) node))]
-		(display "node ")
+  (let [
+	(next-first-child-idx (ftype-ref arena-node (first_child_idx) node))
+	(value (get-value-or-else-false arena-base node))
+	       ]
 		(if (= next-first-child-idx 0)
-		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) n))]
+		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) node))]
 		      (if (= next-sibling-idx 0)
-			  #f
-			  (display 2))
+			  (display "reached the end of depth")
+			  (let [(next-sibling (arena-at arena-base next-sibling-idx))]
+			    (dfs-traverse next-sibling arena-base )
+			    )
+			  )
 		      )
 		    (let [(first-child (arena-at arena-base next-first-child-idx))]
 		      (dfs-traverse first-child arena-base)
