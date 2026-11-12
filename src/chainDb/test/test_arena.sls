@@ -158,10 +158,10 @@
 		 (value-vector (make-bytevector value-len 0))
 		 
 		 ]
-		 (c-memcpy-rev  value-vector (+ arena-base value-off)  value-len)
-		 value-vector
+	    (c-memcpy-rev  value-vector (+ arena-base value-off)  value-len)
+	    value-vector
 	    ))
-	  
+	
 	#f))
   )
 
@@ -198,13 +198,13 @@
 		      (if (= next-sibling-idx 0) #f
 			  (let [(next-sibling  (arena-at arena-base next-sibling-idx))]
 			    (loop key-position next-sibling )))
-			  )))
+		      )))
 	      )) )))
 
   )
 
 (define (update-value arena-base node value-vector )
-    (let* [
+  (let* [
 	 (value-offset (alloc-bytes arena-base value-vector))
 	 (value-len (bytevector-length value-vector))
 	 
@@ -244,7 +244,7 @@
     (let loop [(i 0)]
       (if (or (= i limit)
 	      (not (= (foreign-ref 'unsigned-8
-				     (+ arena-base prefix-off i) 0)
+				   (+ arena-base prefix-off i) 0)
 		      (bytevector-u8-ref key (+ key-position i)))))
 	  i
 	  (loop (+ i 1))))))
@@ -291,47 +291,47 @@
     (if ( = first-child 0)
 	(begin
 	  
-	       (let [(first-node-idx (create-node  arena-base segment-vector value-vector))]
-		 (ftype-set! arena-node (first_child_idx) root first-node-idx)
-		 first-node-idx)
-	      )
+	  (let [(first-node-idx (create-node  arena-base segment-vector value-vector))]
+	    (ftype-set! arena-node (first_child_idx) root first-node-idx)
+	    first-node-idx)
+	  )
 	(begin 
 	  (let [(node (arena-at arena-base first-child)) ]
 	    (let loop [(key-position 0) (n node)]
 	      (let* [(prefix-len (ftype-ref arena-node (prefix_len) n))
 		     (common-length
-		       (common-prefix-length
-			 arena-base n segment-vector key-position))]
+		      (common-prefix-length
+		       arena-base n segment-vector key-position))]
 		(cond
-		  [(= common-length prefix-len)
-		   (let* [(new-key-position (+ key-position prefix-len))
-			  (next-first-child-idx
-			    (ftype-ref arena-node (first_child_idx) n))]
-		     (if (= (bytevector-length segment-vector) new-key-position)
-			 (update-value arena-base n value-vector)
-			 (if (= next-first-child-idx 0)
-			     (add-child
-			       arena-base n
-			       (bytevector-tail segment-vector new-key-position)
-			       value-vector)
-			     (loop
-			       new-key-position
-			       (arena-at arena-base next-first-child-idx)))))]
-		  [(= common-length 0)
-		   (let [(next-sibling-idx
-			   (ftype-ref arena-node (next_sibling_idx) n))]
-		     (if (= next-sibling-idx 0)
-			 (add-brother
-			   arena-base n
-			   (bytevector-tail segment-vector key-position)
-			   value-vector)
-			 (loop
-			   key-position
-			   (arena-at arena-base next-sibling-idx))))]
-		  [else
-		   (split-node
-		     arena-base n segment-vector key-position
-		     common-length value-vector)]))
+		 [(= common-length prefix-len)
+		  (let* [(new-key-position (+ key-position prefix-len))
+			 (next-first-child-idx
+			  (ftype-ref arena-node (first_child_idx) n))]
+		    (if (= (bytevector-length segment-vector) new-key-position)
+			(update-value arena-base n value-vector)
+			(if (= next-first-child-idx 0)
+			    (add-child
+			     arena-base n
+			     (bytevector-tail segment-vector new-key-position)
+			     value-vector)
+			    (loop
+			     new-key-position
+			     (arena-at arena-base next-first-child-idx)))))]
+		 [(= common-length 0)
+		  (let [(next-sibling-idx
+			 (ftype-ref arena-node (next_sibling_idx) n))]
+		    (if (= next-sibling-idx 0)
+			(add-brother
+			 arena-base n
+			 (bytevector-tail segment-vector key-position)
+			 value-vector)
+			(loop
+			 key-position
+			 (arena-at arena-base next-sibling-idx))))]
+		 [else
+		  (split-node
+		   arena-base n segment-vector key-position
+		   common-length value-vector)]))
 	      )) )))
 
   )
@@ -394,7 +394,7 @@
 	 (dst-id-length (bytevector-length dst-id))
 	 (out  (make-bytevector (+ 5  src-id-length 4 label-length 4 dst-id-length)))
 	 (in   (make-bytevector (+ 5  dst-id-length 4 label-length 4 src-id-length)))
-	]
+	 ]
 
     (bytevector-u8-set! out   0 #x02)
     (bytevector-u32-set! out  1 src-id-length (endianness little))
@@ -416,6 +416,65 @@
 
     )
   )
+
+
+
+(define (prefix-scan arena-base segment-vector)
+  (let* [
+	 (header (make-ftype-pointer arena-header arena-base))
+	 (root-idx (ftype-ref arena-header (root_idx) header))
+	 (root (arena-at arena-base root-idx))
+	 (first-child (ftype-ref arena-node (first_child_idx) root))
+	 ]
+    (if ( = first-child 0) #f
+	(begin 
+	  (let [(node (arena-at arena-base first-child)) ]
+	    (let loop [(key-position 0) (n node)]
+	      (if (segment-matches-key? arena-base n  segment-vector key-position)
+		  (begin
+		    (let* [
+			   (prefix-len  (ftype-ref arena-node (prefix_len) n))
+			   (new-key-position ( + key-position  prefix-len))
+			   (next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
+			   ]
+		      (if (= (bytevector-length segment-vector) new-key-position) (get-value-or-else-false arena-base n)
+			  (if (= next-first-child-idx 0 ) #f
+			      (let [(next-first-child (arena-at arena-base next-first-child-idx))]
+				(loop new-key-position next-first-child)
+				)
+			      )
+			  )
+		      )
+		    )
+		  
+		  (begin
+		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) n))]
+		      (if (= next-sibling-idx 0) #f
+			  (let [(next-sibling  (arena-at arena-base next-sibling-idx))]
+			    (loop key-position next-sibling )))
+		      )))
+	      )) )))
+
+  
+  )
+
+(define (dfs-traverse node  arena-base)
+	      (let [ (next-first-child-idx (ftype-ref arena-node (first_child_idx) node))]
+		(display "node ")
+		(if (= next-first-child-idx 0)
+		    (let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) n))]
+		      (if (= next-sibling-idx 0)
+			  #f
+			  (display 2))
+		      )
+		    (let [(first-child (arena-at arena-base next-first-child-idx))]
+		      (dfs-traverse first-child arena-base)
+		      )
+		    
+		    )
+		)
+	      )
+	     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
 ;; арена ноде ввверху это структура или как интерпретировать 32 байта этой памяти, они конечно должы их начало кратно 32 
@@ -497,18 +556,18 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
      (string->bytevector "second value" (native-transcoder)))
 
 (assert
-  (bytevector=?
-    (get arena (string->bytevector "node/1" (native-transcoder)))
-    (string->bytevector "some value " (native-transcoder))))
+ (bytevector=?
+  (get arena (string->bytevector "node/1" (native-transcoder)))
+  (string->bytevector "some value " (native-transcoder))))
 (assert
-  (bytevector=?
-    (get arena (string->bytevector "node/2" (native-transcoder)))
-    (string->bytevector "second value" (native-transcoder))))
+ (bytevector=?
+  (get arena (string->bytevector "node/2" (native-transcoder)))
+  (string->bytevector "second value" (native-transcoder))))
 
 (let* [(root (arena-at arena (ftype-ref arena-header (root_idx) arena-header-ptr)))
-	(common-node (arena-at arena (ftype-ref arena-node (first_child_idx) root)))
-	(old-child (arena-at arena (ftype-ref arena-node (first_child_idx) common-node)))
-	(new-child (arena-at arena (ftype-ref arena-node (next_sibling_idx) old-child)))]
+       (common-node (arena-at arena (ftype-ref arena-node (first_child_idx) root)))
+       (old-child (arena-at arena (ftype-ref arena-node (first_child_idx) common-node)))
+       (new-child (arena-at arena (ftype-ref arena-node (next_sibling_idx) old-child)))]
   (assert (= (ftype-ref arena-node (prefix_len) common-node) 5))
   (assert (= (ftype-ref arena-node (flags) common-node) 0))
   (assert (= (ftype-ref arena-node (prefix_len) old-child) 1))
@@ -534,10 +593,10 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (assert (bytevector=?  (get-node  (string->bytevector "node/2"  (native-transcoder)) arena)  (string->bytevector "Jenia" (native-transcoder))))
 
 (assert (bytevector=? (get arena  #vu8(
-  2
-  6 0 0 0  110 111 100 101 47 49
-  8 0 0 0  32 102 114 105 101 110 100 115
-  6 0 0 0  110 111 100 101 47 50) ) (string->bytevector "working together"  (native-transcoder)) ))
+				       2
+				       6 0 0 0  110 111 100 101 47 49
+				       8 0 0 0  32 102 114 105 101 110 100 115
+				       6 0 0 0  110 111 100 101 47 50) ) (string->bytevector "working together"  (native-transcoder)) ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
