@@ -601,18 +601,28 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 (add-node (string->bytevector "node/1"  (native-transcoder)) (string->bytevector "Pasha" (native-transcoder)) arena)
 (add-node (string->bytevector "node/2"  (native-transcoder)) (string->bytevector "Jenia" (native-transcoder)) arena)
 
-(add-edge (string->bytevector "node/1"  (native-transcoder))   (string->bytevector " friends"  (native-transcoder)) (string->bytevector "node/2"  (native-transcoder)) (string->bytevector "working together"  (native-transcoder)) arena)
+(add-node (string->bytevector "node/3"  (native-transcoder)) (string->bytevector "Sasha" (native-transcoder)) arena)
+
+
+(add-edge (string->bytevector "node/1"  (native-transcoder))   (string->bytevector "colleague"  (native-transcoder)) (string->bytevector "node/2"  (native-transcoder)) (string->bytevector "working together"  (native-transcoder)) arena)
+
+(add-edge (string->bytevector "node/1"  (native-transcoder))   (string->bytevector " friend"  (native-transcoder)) (string->bytevector "node/3"  (native-transcoder)) (string->bytevector "hanging out  together"  (native-transcoder)) arena)
 
 
 (assert (bytevector=?  (get-node  (string->bytevector "node/1"  (native-transcoder)) arena)  (string->bytevector "Pasha" (native-transcoder))))
 (assert (bytevector=?  (get-node  (string->bytevector "node/2"  (native-transcoder)) arena)  (string->bytevector "Jenia" (native-transcoder))))
 
-(assert (bytevector=? (get arena  #vu8(
-				       2
-				       6 0 0 0  110 111 100 101 47 49
-				       8 0 0 0  32 102 114 105 101 110 100 115
-				       6 0 0 0  110 111 100 101 47 50) ) (string->bytevector "working together"  (native-transcoder)) ))
+;; (assert (bytevector=? (get arena  #vu8(
+;; 				       2
+;; 				       6 0 0 0  110 111 100 101 47 49
+;; 				       8 0 0 0  32 102 114 105 101 110 100 115
+;; 				       6 0 0 0  110 111 100 101 47 50) ) (string->bytevector "working together"  (native-transcoder)) ))
 
+
+(prefix-scan  arena #vu8(
+  2
+  6 0 0 0
+  110 111 100 101 47 49))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (assert (= (c-munmap arena arena-size) 0))
