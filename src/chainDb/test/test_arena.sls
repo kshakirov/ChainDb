@@ -496,13 +496,22 @@
 (define (make-dfs-generator thunk )
  (define return #f)
  (define resume #f)
+ (define done #f)
  (define (yield x)
    (display "YIELD-IN\n")
    (call/cc (lambda (k) (set! resume k) (return x))))
  (lambda ()
+   (if done
+       'done
     (call/cc (lambda (k)
       (set! return k)
-      (if resume (resume #f) (thunk yield))))))
+      (if resume (resume #f)
+	  (begin
+	    (thunk yield)
+	    (set! done #t)
+	    (return 'done)
+	    )
+	  ))))))
 
 (define (dfs-traverse-cont child  arena-base yield)
   (let [
@@ -673,7 +682,7 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 
 (display (gen-dfs))
 (display (gen-dfs))
-;;(display (gen-dfs))
+(display (gen-dfs))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
