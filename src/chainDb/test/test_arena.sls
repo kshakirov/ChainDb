@@ -458,33 +458,20 @@
   
   )
 
-(define (dfs-traverse node  arena-base)
+(define (dfs-traverse child  arena-base)
   (let [
-	(next-first-child-idx (ftype-ref arena-node (first_child_idx) node))
-	(value (get-value-or-else-false arena-base node))
+	(next-first-child-idx (ftype-ref arena-node (first_child_idx) child))
+	(next-first-sibling-idx (ftype-ref arena-node (next_sibling_idx) child))
+	(value (get-value-or-else-false arena-base child))
 	]
     (if value (display value)(display "no value: here will be no continuation"))
     (if (= next-first-child-idx 0)
-	(let [(next-sibling-idx (ftype-ref arena-node (next_sibling_idx) node))]
-	  (if (= next-sibling-idx 0)
-	      (display "reached the end of depth, no siblings")
-	      (let [(next-sibling (arena-at arena-base next-sibling-idx))]
-		(dfs-traverse next-sibling arena-base )
-		)
-	      )
-	  )
+	( display "first child is 0, this  branch is dead")
 	(let* [
 	      (first-child (arena-at arena-base next-first-child-idx))
-	      (first-child-sibling-idx (ftype-ref arena-node (next_sibling_idx) first-child))
 	      ]
-	  (begin
 	    (dfs-traverse first-child arena-base)
-	    (if(>  first-child-sibling-idx 0)
-	       (dfs-traverse (arena-at arena-base first-child-sibling-idx) arena-base)
-	       (display "no neighbour to child"))
-		)
 	  )
-	
 	)
     )
   )
