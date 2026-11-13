@@ -14,8 +14,8 @@
     (lambda ()
       (call/cc
        (lambda (cont)
-	 (display "TOP\n")
 	 (set! return cont)
+	 (display "TOP\n")
 	 (if resume
 	     (resume)
 	 (let loop ((i 0))
@@ -26,8 +26,9 @@
 
 
 (define gen (gen-loop-yield))
-(display (gen))
-(display (gen))
+(display (string-append "calling gen: "(number->string (gen)) "\n"))
+(display (string-append "calling gen: "(number->string (gen)) "\n"))
+
 ;;(resume #f)
 
 ;; (define generator
