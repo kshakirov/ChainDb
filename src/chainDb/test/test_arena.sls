@@ -437,7 +437,11 @@
 			   (new-key-position ( + key-position  prefix-len))
 			   (next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
 			   ]
-		      (if (= (bytevector-length segment-vector) new-key-position) (get-value-or-else-false arena-base n)
+		      (if (= (bytevector-length segment-vector) new-key-position)
+			  (unless (= next-first-child-idx 0)
+			    (dfs-traverse (arena-at  arena-base next-first-child-idx) arena-base)
+			    )
+
 			  (if (= next-first-child-idx 0 ) #f
 			      (let [(next-first-child (arena-at arena-base next-first-child-idx))]
 				(loop new-key-position next-first-child)
@@ -468,17 +472,17 @@
     (if (= next-first-child-idx 0)
 	( display "first child is 0, this  branch is dead")
 	(let* [
-	      (first-child (arena-at arena-base next-first-child-idx))
-	      ]
-	    (dfs-traverse first-child arena-base)
+	       (first-child (arena-at arena-base next-first-child-idx))
+	       ]
+	  (dfs-traverse first-child arena-base)
 	  )
 	)
-(if (= next-first-sibling-idx 0)
+    (if (= next-first-sibling-idx 0)
 	( display "first sibling  is 0, this  branch is dead")
 	(let* [
-	      (first-sibling (arena-at arena-base next-first-sibling-idx))
-	      ]
-	    (dfs-traverse first-sibling arena-base)
+	       (first-sibling (arena-at arena-base next-first-sibling-idx))
+	       ]
+	  (dfs-traverse first-sibling arena-base)
 	  )
 	)
 
