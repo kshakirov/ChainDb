@@ -438,9 +438,9 @@
 			   (next-first-child-idx (ftype-ref arena-node (first_child_idx) n))
 			   ]
 		      (if (= (bytevector-length segment-vector) new-key-position)
-			  (unless (= next-first-child-idx 0)
-			    (dfs-traverse (arena-at  arena-base next-first-child-idx) arena-base)
-			    )
+			  (if (= next-first-child-idx 0)
+			      #f
+			      (arena-at arena-base next-first-child-idx))
 
 			  (if (= next-first-child-idx 0 ) #f
 			      (let [(next-first-child (arena-at arena-base next-first-child-idx))]
@@ -461,6 +461,8 @@
 
   
   )
+
+
 
 
 (define (dfs-traverse child  arena-base)
@@ -491,8 +493,44 @@
     )
   )
 
+(define (make-dfs-generator thunk )
+ (define return #f)
+ (define resume #f)
+ (define (yield x)
+   (display "YIELD-IN\n")
+   (call/cc (lambda (k) (set! resume k) (return x))))
+ (lambda ()
+    (call/cc (lambda (k)
+      (set! return k)
+      (if resume (resume #f) (thunk yield))))))
 
+(define (dfs-traverse-cont child  arena-base yield)
+  (let [
+	(next-first-child-idx (ftype-ref arena-node (first_child_idx) child))
+	(next-first-sibling-idx (ftype-ref arena-node (next_sibling_idx) child))
+	(value (get-value-or-else-false arena-base child))
+	]
+    (if value (yield value)(display "no value: here will be no continuation"))
+    (if (= next-first-child-idx 0)
+	( display "first child is 0, this  branch is dead")
+	(let* [
+	       (first-child (arena-at arena-base next-first-child-idx))
+	       ]
+	  (dfs-traverse-cont first-child arena-base yield)
+	  )
+	)
+    (if (= next-first-sibling-idx 0)
+	( display "first sibling  is 0, this  branch is dead")
+	(let* [
+	       (first-sibling (arena-at arena-base next-first-sibling-idx))
+	       ]
+	  (dfs-traverse-cont first-sibling arena-base yield)
+	  )
+	)
 
+    
+    )
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
@@ -622,11 +660,21 @@ p;; p — указатель, или (void*)-1 = ошибк это указат�
 ;; 				       8 0 0 0  32 102 114 105 101 110 100 115
 ;; 				       6 0 0 0  110 111 100 101 47 50) ) (string->bytevector "working together"  (native-transcoder)) ))
 
+(define first-out-child
+  (prefix-scan arena #vu8(
+    2
+    6 0 0 0
+    110 111 100 101 47 49)))
 
-(prefix-scan  arena #vu8(
-  2
-  6 0 0 0
-  110 111 100 101 47 49))
+(define gen-dfs
+  (make-dfs-generator
+    (lambda (y)
+      (dfs-traverse-cont first-out-child arena y))))
+
+(display (gen-dfs))
+(display (gen-dfs))
+;;(display (gen-dfs))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CLEAN UP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (assert (= (c-munmap arena arena-size) 0))
