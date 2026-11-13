@@ -3,6 +3,7 @@
 
 
 (define resume-cont #f)
+(define i-saved 0)
 (define loop-yield
   (lambda ()
     (let loop [(i 0)]
@@ -11,12 +12,14 @@
 
 	 (display (string-append (number->string i) "\n") )
 	 (set! resume-cont cont)
+	 
 	 (cont i)))
   
 	  (display "HERE ")
 	  
           
-	  (if (= i 10) 
+	  (if (> i 10)
+	      i
 	      (loop i)
 	      ))))
 
