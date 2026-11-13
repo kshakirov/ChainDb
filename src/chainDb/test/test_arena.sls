@@ -473,6 +473,16 @@
 	    (dfs-traverse first-child arena-base)
 	  )
 	)
+(if (= next-first-sibling-idx 0)
+	( display "first sibling  is 0, this  branch is dead")
+	(let* [
+	      (first-sibling (arena-at arena-base next-first-sibling-idx))
+	      ]
+	    (dfs-traverse first-sibling arena-base)
+	  )
+	)
+
+    
     )
   )
 
