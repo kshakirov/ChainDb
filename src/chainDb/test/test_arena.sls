@@ -473,8 +473,16 @@
 		)
 	      )
 	  )
-	(let [(first-child (arena-at arena-base next-first-child-idx))]
-	  (dfs-traverse first-child arena-base)
+	(let* [
+	      (first-child (arena-at arena-base next-first-child-idx))
+	      (first-child-sibling-idx (ftype-ref arena-node (next_sibling_idx) first-child))
+	      ]
+	  (begin
+	    (dfs-traverse first-child arena-base)
+	    (if(>  first-child-sibling-idx 0)
+	       (dfs-traverse (arena-at arena-base first-child-sibling-idx) arena-base)
+	       (display "no neighbour to child"))
+		)
 	  )
 	
 	)
