@@ -462,6 +462,7 @@
   
   )
 
+
 (define (dfs-traverse child  arena-base)
   (let [
 	(next-first-child-idx (ftype-ref arena-node (first_child_idx) child))
@@ -489,6 +490,9 @@
     
     )
   )
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ASSERTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 p;; p — указатель, или (void*)-1 = ошибк это указатель на начало памяти выделенной ммаз
