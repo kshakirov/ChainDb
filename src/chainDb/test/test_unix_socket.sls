@@ -27,7 +27,17 @@
     (sun_family unsigned-8)
     (sun_path   (array 104 unsigned-8))))
 
+;; this one below is just a draft
 
+(define-ftype kevene
+  (struct
+    (indent  unsigned-int)
+    (filter int )
+    (flags int )
+    ( fflags int)
+    (data int)
+    (udata void*)
+    ))
 ;; this one shoud be added because we need a pointer
 (define-ftype sockaddr-un*
   (* sockaddr-un))
@@ -46,6 +56,14 @@
 (define socket-path "/tmp/my_sock.sock")
 (define c-bind
   (foreign-procedure "bind" (int  sockaddr-un*  unsigned-32) int))
+
+(define c-kqueue
+  (foreign-procedure "kqueue" () int))
+
+
+
+
+
 (let*
     [
      (s  (c-socket AF_UNIX SOCK_STREAM SOCKET_PROTOCOL_DEFAULT))
@@ -59,6 +77,9 @@
     (error 'bind "failed"))
   (unless  (= (c-listen s 64) 0)
     (error 'listen "failed" ))
+  (unless  (>= (c-kqueue ) 0)
+    (error 'kqueue "failed" ))
+  
   (assert (> s -1)
 	  ) 
   )
