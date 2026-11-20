@@ -99,13 +99,14 @@
   (unless (=  (c-bind s addr-ptr (ftype-sizeof sockaddr-un)) 0)
     (error 'bind "failed"))
   (let* [
-	 (listen-fd (c-listen s 64))
+	 (listen (c-listen s 64))
 	 (kq (c-kqueue ))
 	 (kev-ptr (create-kevent-ptr s))
+	 (kevent-res (c-kevent kq (ftype-pointer-address  kev-ptr) 1 0 0 0))
 	 ]
 
     (assert (> kq -1))
-    (assert (> listen-fd -1))
+    (assert (> listen -1))
     (assert (> s -1))
     (assert (>= (ftype-ref kevent (ident) kev-ptr ) 0))
     ) 
