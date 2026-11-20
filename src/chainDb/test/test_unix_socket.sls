@@ -44,18 +44,22 @@
 ;; this one shoud be added because we need a pointer
 
 
-(define kevent-ptr
-  (make-ftype-pointer kevent
-		      (foreign-alloc (ftype-sizeof kevent))))
+;; (define kevent-ptr
+;;   (make-ftype-pointer kevent
+;; 		      (foreign-alloc (ftype-sizeof kevent)))
+;;   )
 
 (define (create-kevent-ptr  fd)
+  (let [(kevent-ptr (make-ftype-pointer kevent
+		      (foreign-alloc (ftype-sizeof kevent))) )]
   (ftype-set! kevent (ident) kevent-ptr fd)
   (ftype-set! kevent (filter) kevent-ptr -1)          ; EVFILT_READ
   (ftype-set! kevent (flags)  kevent-ptr 1)           ; EV_ADD
   (ftype-set! kevent (fflags) kevent-ptr 0)
   (ftype-set! kevent (data)   kevent-ptr 0)
   (ftype-set! kevent (udata)  kevent-ptr 0)
-  )
+  
+  kevent-ptr))
   
 
 (define-ftype sockaddr-un*
@@ -66,7 +70,7 @@
 		      (foreign-alloc (ftype-sizeof sockaddr-un))))
 
 (define (create-sockaddr-un path path-len)
-  ( ftype-set! sockaddr-un (sun_len) addr-ptr (ftype-sizeof sockaddr-un))
+    ( ftype-set! sockaddr-un (sun_len) addr-ptr (ftype-sizeof sockaddr-un))
   (ftype-set! sockaddr-un (sun_family) addr-ptr AF_UNIX)
   (c-memcpy (+ (ftype-pointer-address  addr-ptr) 2) path path-len)
  
@@ -94,12 +98,16 @@
   (create-sockaddr-un sock-addr sock-addr-len)
   (unless (=  (c-bind s addr-ptr (ftype-sizeof sockaddr-un)) 0)
     (error 'bind "failed"))
-  (unless  (= (c-listen s 64) 0)
-    (error 'listen "failed" ))
-  (unless  (>= (c-kqueue ) 0)
-    (error 'kqueue "failed" ))
-  
-  (assert (> s -1)
-	  ) 
+  (let* [
+	 (listen-fd (c-listen s 64))
+	 (kq (c-kqueue ))
+	 (kev-ptr (create-kevent-ptr s))
+	 ]
+
+    (assert (> kq -1))
+    (assert (> listen-fd -1))
+    (assert (> s -1))
+    (assert (>= (ftype-ref kevent (ident) kev-ptr ) 0))
+    ) 
   )
 
