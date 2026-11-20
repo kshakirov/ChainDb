@@ -29,22 +29,41 @@
 
 ;; this one below is just a draft
 
-(define-ftype kevene
+(define c-kevent
+  (foreign-procedure "kevent" (int void* int void* int void*) int))
+
+(define-ftype kevent
   (struct
-    (indent  unsigned-int)
-    (filter int )
-    (flags int )
-    ( fflags int)
-    (data int)
+    (ident  unsigned-64)
+    (filter integer-16)
+    (flags unsigned-16)
+    ( fflags unsigned-32)
+    (data unsigned-64)
     (udata void*)
     ))
 ;; this one shoud be added because we need a pointer
+
+
+(define kevent-ptr
+  (make-ftype-pointer kevent
+		      (foreign-alloc (ftype-sizeof kevent))))
+
+(define (create-kevent-ptr  fd)
+  (ftype-set! kevent (ident) kevent-ptr fd)
+  (ftype-set! kevent (filter) kevent-ptr -1)          ; EVFILT_READ
+  (ftype-set! kevent (flags)  kevent-ptr 1)           ; EV_ADD
+  (ftype-set! kevent (fflags) kevent-ptr 0)
+  (ftype-set! kevent (data)   kevent-ptr 0)
+  (ftype-set! kevent (udata)  kevent-ptr 0)
+  )
+  
+
 (define-ftype sockaddr-un*
   (* sockaddr-un))
 
 (define addr-ptr
   (make-ftype-pointer sockaddr-un
-  (foreign-alloc (ftype-sizeof sockaddr-un))))
+		      (foreign-alloc (ftype-sizeof sockaddr-un))))
 
 (define (create-sockaddr-un path path-len)
   ( ftype-set! sockaddr-un (sun_len) addr-ptr (ftype-sizeof sockaddr-un))
